@@ -1,11 +1,11 @@
 Table of Contents
 =========================
 
-**[Support](#support)**  
-**[Prerequisites](#prerequisites)**  
-**[Installing](#installing)**  
-**[Built-in Webserver](#built-in-webserver)**  
-**[Configure With Apache and Celeryd](#configure-with-apache-and-celeryd)**  
+**[Support](#markdown-header-support)**  
+**[Prerequisites](#markdown-header-prerequisites)**  
+**[Installing](#markdown-header-installing)**  
+**[Built-in Webserver](#markdown-header-built-in-webserver)**  
+**[Configure With Apache and Celeryd](#markdown-header-configure-with-apache-and-celeryd)**  
 
 Installation Instructions
 =========================
