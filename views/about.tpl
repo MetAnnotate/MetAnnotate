@@ -19,7 +19,7 @@ MetAnnotate is a tool and web application for taxonomic profiling of shotgun met
 <p>
 MetAnnotate is designed for Linux systems.
 <p>
-For full installation instructions, see the MetAnnotate <a href="https://bitbucket.org/pavs/metagenome">bitbucket repository</a>
+For full installation instructions, see the MetAnnotate <a href="https://bitbucket.org/doxeylab/metannotate">bitbucket repository</a>
 <p>
 <br>
 
