@@ -1,3 +1,12 @@
+Table of Contents
+=========================
+
+**[Support](#support)**  
+**[Prerequisites](#prerequisites)**  
+**[Installing](#installing)**  
+**[Built-in Webserver](#built-in-webserver)**  
+**[Configure With Apache and Celeryd](#configure-with-apache-and-celeryd)**  
+
 Installation Instructions
 =========================
 
@@ -73,8 +82,8 @@ Used to place new sequences onto an existing tree topology.
  * sudo mv guppy /usr/bin/  
  * sudo mv pplacer /usr/bin/  
 
-Install and Configure
----------------------
+Installing
+----------
 
 git clone <repository path>
 
@@ -180,7 +189,7 @@ CELERY_CREATE_DIRS=1
  * sudo update-rc.d celeryd defaults
  * sudo /etc/init.d/celeryd restart
 
-### Integrate with Apache.
+### Integrating with Apache.
  * sudo apt-get install libapache2-mod-wsgi
  * sudo vim /etc/apache2/sites-available/000-default.conf
 
@@ -208,11 +217,17 @@ CELERY_CREATE_DIRS=1
 
 ### Change Permissions of IO Directories.
  * sudo chgrp www-data realinput/
+ * sudo chown www-data realinput/
  * sudo chgrp www-data input/
+ * sudo chown www-data input/
  * sudo chgrp www-data output/
+ * sudo chown www-data output/
  * sudo chgrp www-data databases/
+ * sudo chown www-data databases/
  * sudo chgrp www-data tmp/
+ * sudo chown www-data tmp/
  * sudo chgrp www-data session/
+ * sudo chown www-data session/
 
 ### Restarting
 Upon a restart of the system, all components will be restarted as well. If
