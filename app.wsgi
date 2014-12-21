@@ -284,7 +284,7 @@ def QueuedJobs():
           for l in output.split('\n') if 'id' in l]
   revoked = RevokedJobs()
   jobs = [j for j in jobs if j not in revoked]
-  jobs.reverse()
+  jobs.sort(key=lambda x: int(x.split('-')[1]))
   return jobs
 
 def IsActive(job):
@@ -393,12 +393,13 @@ def submit_job():
     # Schedules the job in the correct queue.
     s = request.environ.get('beaker.session')
     task = tasks.RunPipeline.apply_async(
-      args=[moved_orf_files, moved_hmm_files, hmm_evalue, refseq_hmm_evalue,
-            percent_id, do_sequence_classification,
-            do_phylogenetic_classification, filter_multi_orf,
-            filter_multi_refseq, transeq, min_coverage, min_alignment,
-            reference_msa, reference_tree, reference_log],
-      kwargs={})
+      [moved_orf_files, moved_hmm_files, hmm_evalue, refseq_hmm_evalue,
+       percent_id, do_sequence_classification,
+       do_phylogenetic_classification, filter_multi_orf,
+       filter_multi_refseq, transeq, min_coverage, min_alignment,
+       reference_msa, reference_tree, reference_log],
+      task_id='%d-%d' % (int(random.random()*1000000000),
+                         int(time.time()*1000000)))
     return {'job-id': task.task_id}
   except Exception, ex:
     traceback.print_exc(file=sys.stderr)

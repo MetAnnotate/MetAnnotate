@@ -7,6 +7,7 @@ import heapq
 import json
 import shutil
 import sqlite3
+CONCURRENCY = '2'
 
 def run_process(args, stdout_file=None, meta=None, task=None):
   stdout_handle = (open(stdout_file, 'w') if stdout_file else
@@ -214,7 +215,7 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
     run_process(['hmmsearch', '-o', '/dev/null', '-A', msa_file,
                  '--domtblout', hmm_out_file,
                  '-E' if filter_multi else '--domE', str(hmm_evalue), '--cpu',
-                 '6', hmm_file, orf_file], task=task, meta=meta)
+                 CONCURRENCY, hmm_file, orf_file], task=task, meta=meta)
 
     # Parses output to retrieve e-values and ids. Tedious.
     hmm_evalues = {}
@@ -395,7 +396,7 @@ def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
   converted_refseq_msa_file = _MakeTemp(temp_files)
   run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
                '-E' if filter_multi else '--domE', str(hmm_evalue),
-               '--domtblout', domtblout, '--cpu', '3', hmm_file,
+               '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
                'data/Refseq.fa'], task=task, meta=meta)
   # Stop prematurealy if no refseq hits.
   if os.stat(refseq_msa_file).st_size == 0:
@@ -561,6 +562,11 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                 do_phylogenetic_classification, filter_multi_orf,
                 filter_multi_refseq, transeq, min_coverage, min_alignment,
                 reference_msa, reference_tree, reference_log):
+  global CONCURRENCY
+  with open('concurrency.txt') as f:
+    for l in f:
+      CONCURRENCY = l.strip()
+      break
   CleanUp()
   # Strange bug: Server hand if this import is at the top of the file. There is
   # likely a cyclic reference problem that is hard to reproduce.
@@ -627,6 +633,9 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
   # For each HMM for each ORF.
   for hmm_index, (hmm_file_name, hmm_file) in enumerate(hmm_files):
+    meta['states'] = {}
+    if transeq:
+      meta['states']['TRANSEQ'] = True
     analysis_index += 1
     meta['analysis'] = analysis_index
 
@@ -809,7 +818,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         # Runs FastTree given the alignment.
         meta['states']['FASTTREE'] = True
         self.update_state(meta=meta)
-        os.environ['OMP_NUM_THREADS'] = '3' 
+        os.environ['OMP_NUM_THREADS'] = CONCURRENCY
         tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'])
         column['refseq_tree'] = os.path.basename(tree_file)
         log_file = MakeOutputFile([hmm_family_safe, 'refseq', 'fastree',
@@ -832,7 +841,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
         # Run pplacer.
         placements_file = _MakeTemp(temp_files, extension='.jplace')
-        run_process(['pplacer', '-j', '3', '-c', package_loc, '-o',
+        run_process(['pplacer', '-j', CONCURRENCY, '-c', package_loc, '-o',
                      placements_file, '--groups', '10', fixed_alignment_file],
                      task=self, meta=meta)
 

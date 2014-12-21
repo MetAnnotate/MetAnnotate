@@ -2,11 +2,11 @@
 <h4>B12, aquatic</h4>
 <ul>
 <li><a href="/status/86ddb100-6361-460a-9948-1341441101fd">Antarctic aquatic metagenome (phylogenetic method)</a></li>
-<li><a href="http://dox1.uwaterloo.ca/status/5ddf16f7-6ffb-4352-94b4-add36994a680">B12 genes and taxonomic markers, multiple environments (usearch)</a></li>
+<li><a href="/status/da127de1-3088-47d0-bec5-b991fc911f1f">B12 genes, multiple environments (usearch)</a></li>
 </ul>
 <h4>Human gut microbiome</h4>
 <ul>
-<li><a href="/status/3503d445-0c79-40e9-b287-38d7d0304961">Community composition (usearch)</a></li>
+<li><a href="/status/0474dea9-b791-41b4-bd00-a52e3a168fc9">Community composition (usearch)</a></li>
 </ul>
 <h4>Acid Mine Drainage Metagenome</h4>
 <ul>
