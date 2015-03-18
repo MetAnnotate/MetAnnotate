@@ -34,6 +34,8 @@ for (d in names(which(table(tb[,1]) < 50)))
 {
 	tb <- tb[-which(tb[,1] == d),]
 }
+
+tb[,1] <- as.character(tb[,1])
 </pre>
 
 <h3>Plotting</h3>
@@ -44,7 +46,7 @@ The first thing you need to decide on is the data column you want to analyze.
 For <strong>order</strong> level taxon assignments predicted using the <strong>tree-based method</strong> ...
 
 <pre>
-k <- "Representative.Order" # can be Species, Genus, Family, Order, Class...
+k <- "Closest.Homolog.Order" # can be Species, Genus, Family, Order, Class...
 </pre>
 
 Now run the following code to make your barplot
@@ -91,7 +93,7 @@ library(pheatmap)
 As before, you need to pick a taxonomic level. This time it is called sColumn
 
 <pre>
-sColumn <- "Representative.Genus" #species column for which to do the species breakdown/analysis
+sColumn <- "Closest.Homolog.Genus" #species column for which to do the species breakdown/analysis
 </pre>
 
 Since showing all taxa may be overwhelming, we can choose to show only the most frequent species -- those present greater than some threshold in at least one dataset. This is done with the mpt parameter
