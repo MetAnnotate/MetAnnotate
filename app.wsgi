@@ -53,10 +53,13 @@ with open('metagenome_directories_root.txt') as f:
     break
 
 required_password = None
-with open('metannotate.pw') as f:
-  for l in f:
-    required_password = l.strip()
-    break
+try:
+  with open('metannotate.pw') as f:
+    for l in f:
+      required_password = l.strip()
+      break
+except IOError:
+  pass
 
 @route('/sequence/<filename>/<name>')
 def GetSequence(filename, name):
