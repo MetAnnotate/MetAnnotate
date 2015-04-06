@@ -52,6 +52,12 @@ with open('metagenome_directories_root.txt') as f:
     metagenomes_root = l.strip()
     break
 
+required_password = None
+with open('metannotate.pw') as f:
+  for l in f:
+    required_password = l.strip()
+    break
+
 @route('/sequence/<filename>/<name>')
 def GetSequence(filename, name):
   full = os.path.join('output', os.path.basename(filename))
@@ -115,7 +121,7 @@ def subtree():
 @route('/')
 def index():
   s = request.environ.get('beaker.session')
-  if s.get('authenticated',0) == 0:
+  if required_password and s.get('authenticated',0) == 0:
     return template('authenticate')
   return template('index')
 
@@ -142,7 +148,7 @@ def contact():
 @post('/authenticate/')
 def authenticate():
   password = request.forms.password
-  if password == 'metannotatereview':
+  if password == required_password:
     s = request.environ.get('beaker.session')
     s['authenticated'] = 1
   redirect('/')
