@@ -106,6 +106,7 @@ $(function () {
         filter_multi_refseq: $('#multi-refseq').is(':checked') ? '1' : '',
         mode: $("input[name=mode]:checked").val(),
         transeq: $('#transeq').is(':checked') ? '1' : '',
+        force_msa: $('#force-msa').is(':checked') ? '1' : '',
         reference_msa: msa_files.length > 0? msa_files[0][1] : '',
         reference_tree: tree_files.length > 0? tree_files[0][1] : '',
         reference_log: log_files.length > 0? log_files[0][1] : '',

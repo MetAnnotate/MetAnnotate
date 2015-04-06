@@ -156,6 +156,13 @@
                 reads.
               </label>
             </div>
+            <div class="checkbox">
+              <label>
+                <input id="force-msa" type="checkbox">
+                Always compute and provide an MSA of metagenome and reference
+                database hits.
+              </label>
+            </div>
             <br/>
             <span>Minimum HMM coverage for RefSeq hits</span>:
             &nbsp;&nbsp;&nbsp;

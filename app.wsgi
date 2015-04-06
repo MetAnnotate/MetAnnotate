@@ -337,6 +337,7 @@ def submit_job():
   filter_multi_orf = bool(request.forms.filter_multi_orf)
   filter_multi_refseq = bool(request.forms.filter_multi_refseq)
   transeq = bool(request.forms.transeq)
+  force_msa = bool(request.forms.force_msa)
   mode = request.forms.mode or 'sequence'
   do_sequence_classification = mode in ('sequence', 'both')
   do_phylogenetic_classification = mode in ('phylogenetic', 'both')
@@ -404,7 +405,7 @@ def submit_job():
     task = tasks.RunPipeline.apply_async(
       [moved_orf_files, moved_hmm_files, hmm_evalue, refseq_hmm_evalue,
        percent_id, do_sequence_classification,
-       do_phylogenetic_classification, filter_multi_orf,
+       do_phylogenetic_classification, force_msa, filter_multi_orf,
        filter_multi_refseq, transeq, min_coverage, min_alignment,
        reference_msa, reference_tree, reference_log],
       task_id='%d-%d' % (int(random.random()*1000000000),

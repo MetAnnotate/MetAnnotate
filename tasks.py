@@ -559,7 +559,7 @@ def _CombineReadFiles(read_files, output_file):
 @app.task(bind=True)
 def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                 usearch_percent_id, do_sequence_classification,
-                do_phylogenetic_classification, filter_multi_orf,
+                do_phylogenetic_classification, force_msa, filter_multi_orf,
                 filter_multi_refseq, transeq, min_coverage, min_alignment,
                 reference_msa, reference_tree, reference_log):
   global CONCURRENCY
@@ -575,6 +575,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
   lineage_files = {}
   parameters = [('Number of metagenome files', len(orf_files)),
                 ('Number of HMM models', len(hmm_files)),
+                ('Always compute MSA', force_msa),
                 ('metagenome HMM E-value', hmm_evalue),
                 ('RefSeq HMM E-value', refseq_hmm_evalue),
                 ('usearch %id', usearch_percent_id),
@@ -737,7 +738,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                 continue
             closest_neighbours[query] = (target, percent_id)
 
-    if do_phylogenetic_classification:
+    if do_phylogenetic_classification or force_msa:
       # Runs hmmalign on matching sequences.
       meta['states']['HMMALIGN'] = True
       self.update_state(meta=meta)
@@ -788,6 +789,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
       if total_refseqs == 0:
         continue
 
+    if do_phylogenetic_classification:
       if reference_msa:
         refseq_alignment_file = MakeOutputFile([hmm_family_safe, 'refseq',
                                                 'msa'], extension='.fa')
