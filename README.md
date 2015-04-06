@@ -115,7 +115,7 @@ git clone <repository path>
  * cd metannotate/precompute/
  * wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz
  * gunzip gi_taxid_prot.dmp.gz
- * mv gi_taxid_prot ../data/
+ * sudo mv gi_taxid_prot ../data/
 
 ### Set Metagenome Directories
  * cd metannotate/
@@ -221,16 +221,22 @@ CELERY_CREATE_DIRS=1
 ### Change Permissions of IO Directories.
  * sudo chgrp www-data realinput/
  * sudo chown www-data realinput/
+ * sudo chmod g+w realinput/
  * sudo chgrp www-data input/
  * sudo chown www-data input/
+ * sudo chmod g+w input/
  * sudo chgrp www-data output/
  * sudo chown www-data output/
+ * sudo chmod g+w output/
  * sudo chgrp www-data databases/
  * sudo chown www-data databases/
+ * sudo chmod g+w databases/
  * sudo chgrp www-data tmp/
  * sudo chown www-data tmp/
+ * sudo chmod g+w tmp/
  * sudo chgrp www-data session/
  * sudo chown www-data session/
+ * sudo chmod g+w session/
 
 ### Restarting
 Upon a restart of the system, all components will be restarted as well. If
