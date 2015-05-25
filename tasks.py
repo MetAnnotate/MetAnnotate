@@ -7,12 +7,16 @@ import heapq
 import json
 import shutil
 import sqlite3
+
 CONCURRENCY = '2'
+CONCURRENCY_SPECIFIED = False
+OUTPUT_DIR = 'output'
+TMP_DIR = 'tmp'
 
 def run_process(args, stdout_file=None, meta=None, task=None):
   stdout_handle = (open(stdout_file, 'w') if stdout_file else
-                   tempfile.NamedTemporaryFile(dir='tmp'))
-  stderr_handle = tempfile.NamedTemporaryFile(dir='tmp')
+                   tempfile.NamedTemporaryFile(dir=TMP_DIR))
+  stderr_handle = tempfile.NamedTemporaryFile(dir=TMP_DIR)
   with stdout_handle as stdout, stderr_handle as stderr:
     the_process = subprocess.Popen(args, stdout=stdout, stderr=stderr)
     if meta and task:
@@ -22,6 +26,8 @@ def run_process(args, stdout_file=None, meta=None, task=None):
       os.chmod(stdout.name, 0774)
       os.chmod(stderr.name, 0774)
       task.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running commands: %s' % ' '.join(args)
     return_code = the_process.wait()
     if meta and task:
       del meta['pid']
@@ -89,9 +95,9 @@ def UpdateTreeWithPhyloConsistency(node, taxid_dictionary, ranks, parents):
 
 def _MakeTemp(all_temp, make_directory=False, extension=''):
   if make_directory:
-    temp_file = tempfile.mkdtemp(dir='tmp')
+    temp_file = tempfile.mkdtemp(dir=TMP_DIR)
   else:
-    fd, temp_file = tempfile.mkstemp(dir='tmp', suffix=extension)
+    fd, temp_file = tempfile.mkstemp(dir=TMP_DIR, suffix=extension)
     os.close(fd)
   all_temp.append(temp_file)
   return temp_file
@@ -491,7 +497,7 @@ def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
 
 def MakeOutputFile(parts, extension=''):
   fd, output_file = tempfile.mkstemp(
-      dir='output',
+      dir=OUTPUT_DIR,
       prefix = '%s_' % '_'.join(parts),
       suffix='%s%s' % (str(int(random.random()*1000000000)), extension))
   os.close(fd)
@@ -512,10 +518,10 @@ def CleanUp():
         pass
 
   allowed_output_time = time.time() - MAX_OUTPUT_HOURS * 3600
-  for f in os.listdir('output'):
+  for f in os.listdir(OUTPUT_DIR):
     if f.startswith('_sample_'):
       continue
-    full = os.path.join('output', f)
+    full = os.path.join(OUTPUT_DIR, f)
     if not f.startswith('.') and os.path.getmtime(full) <= allowed_output_time:
       try:
         os.remove(full)
@@ -533,7 +539,7 @@ def _CombineAnnotationFiles(annotation_files, output_file):
   with open(output_file, 'w') as f:
     first_file = True
     for annotations_file in annotation_files:
-      with open(os.path.join('output', annotations_file)) as input_handle:
+      with open(os.path.join(OUTPUT_DIR, annotations_file)) as input_handle:
         first_line = True
         for l in input_handle:
           if first_line and not first_file:
@@ -547,7 +553,7 @@ def _CombineReadFiles(read_files, output_file):
   seen = set()
   with open(output_file, 'w') as f:
     for reads_file in read_files:
-      with open(os.path.join('output', reads_file)) as input_handle:
+      with open(os.path.join(OUTPUT_DIR, reads_file)) as input_handle:
         ignore = False
         for l in input_handle:
           if l.startswith('>'):
@@ -562,12 +568,28 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                 do_phylogenetic_classification, force_msa, filter_multi_orf,
                 filter_multi_refseq, transeq, min_coverage, min_alignment,
                 reference_msa, reference_tree, reference_log):
+  return RunPipelineReal(
+      self, RunPipeline.request.id, orf_files, hmm_files,
+      hmm_evalue, refseq_hmm_evalue, usearch_percent_id,
+      do_sequence_classification, do_phylogenetic_classification,
+      force_msa, filter_multi_orf, filter_multi_refseq, transeq,
+      min_coverage, min_alignment, reference_msa, reference_tree,
+      reference_log)
+
+def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
+                    refseq_hmm_evalue, usearch_percent_id,
+                    do_sequence_classification, do_phylogenetic_classification,
+                    force_msa, filter_multi_orf, filter_multi_refseq, transeq,
+                    min_coverage, min_alignment, reference_msa, reference_tree,
+                    reference_log):
   global CONCURRENCY
-  with open('concurrency.txt') as f:
-    for l in f:
-      CONCURRENCY = l.strip()
-      break
-  CleanUp()
+  if not CONCURRENCY_SPECIFIED:
+    with open('concurrency.txt') as f:
+      for l in f:
+        CONCURRENCY = l.strip()
+        break
+  if instance:
+    CleanUp()
   # Strange bug: Server hand if this import is at the top of the file. There is
   # likely a cyclic reference problem that is hard to reproduce.
   import ete2
@@ -623,7 +645,10 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
   # Transeq DNA to protein.
   if transeq:
     meta['states']['TRANSEQ'] = True
-    self.update_state(meta=meta)
+    if instance:
+      instance.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running Transeq.'
     new_orf_files = []
     for orfs_name, orfs_path in orf_files:
       new_orfs_path = _MakeTemp(temp_files)
@@ -652,11 +677,18 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
     # Runs hmmsearch on orf files.
     meta['states']['HMMSEARCH1'] = True
-    self.update_state(meta=meta)
+    if instance:
+      instance.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running hmmsearch on provided sequences.'
     (read_files,hmm_hit_files, safe_orf_names, hmm_hit_evalues) = FindOrfHits(
        orf_files, hmm_evalue, min_alignment, filter_multi_orf, hmm_file,
-       hmm_family_safe, temp_files, column, self, meta)
+       hmm_family_safe, temp_files, column, instance, meta)
     meta['total_orfs'] = sum(len(evals) for evals in hmm_hit_evalues)
+    if meta['total_orfs'] == 0:
+      if not instance:
+        print >> sys.stderr, 'No ORF hits to HMM.'
+      continue
 
     if 'rows' not in output:
       rows = []
@@ -675,9 +707,12 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
     else:
       # Runs hmmsearch on refseq.
       meta['states']['HMMSEARCH2'] = True
-      self.update_state(meta=meta)
+      if instance:
+        instance.update_state(meta=meta)
+      else:
+        print >> sys.stderr, 'Running hmmsearch on Reference database.'
       (refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary) = FindRefseqHits(
-        refseq_hmm_evalue, filter_multi_refseq, hmm_file, temp_files, self,
+        refseq_hmm_evalue, filter_multi_refseq, hmm_file, temp_files, instance,
         meta)
     column['total_reference_sequences'] = len(refseq_hit_ids)
     meta['total_refs'] = len(refseq_hit_ids)
@@ -717,7 +752,10 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
     if do_sequence_classification:
       meta['states']['USEARCH'] = True
-      self.update_state(meta=meta)
+      if instance:
+        instance.update_state(meta=meta)
+      else:
+        print >> sys.stderr, 'Running USEARCH'
 
       # USEARCH for closest neighbours. 
       closest_neighbours = {}
@@ -725,7 +763,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         blast_output = _MakeTemp(temp_files)
         run_process(['usearch', '-usearch_global', combined_reads_file, '-db',
                      fixed_refseqs_file_full, '-id', str(usearch_percent_id),
-                     '-blast6out', blast_output], task=self, meta=meta)
+                     '-blast6out', blast_output], task=instance, meta=meta)
         with open(blast_output) as f:
           for l in f:
             parts = l.split('\t')
@@ -741,10 +779,13 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
     if do_phylogenetic_classification or force_msa:
       # Runs hmmalign on matching sequences.
       meta['states']['HMMALIGN'] = True
-      self.update_state(meta=meta)
+      if instance:
+        instance.update_state(meta=meta)
+      else:
+        print >> sys.stderr, 'Running hmmalign.'
       alignment_file = _MakeTemp(temp_files)
       run_process(['hmmalign', '-o', alignment_file, hmm_file,
-                   combined_seqs_file], task=self, meta=meta)
+                   combined_seqs_file], task=instance, meta=meta)
       # Converts to FASTA format.
       converted_alignment_file = _MakeTemp(temp_files)
       run_process(['esl-reformat', '-o', converted_alignment_file, 'afa',
@@ -819,7 +860,10 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
         # Runs FastTree given the alignment.
         meta['states']['FASTTREE'] = True
-        self.update_state(meta=meta)
+        if instance:
+          instance.update_state(meta=meta)
+        else:
+          print >> sys.stderr, 'Running FastTree.'
         os.environ['OMP_NUM_THREADS'] = CONCURRENCY
         tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'])
         column['refseq_tree'] = os.path.basename(tree_file)
@@ -831,7 +875,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         if total_refseqs >= 50000:
           args += ['-fastest']
         args += [refseq_alignment_file]
-        run_process(args, task=self, meta=meta)
+        run_process(args, task=instance, meta=meta)
 
       if meta['total_orfs'] > 0:
         # Create RefPackage for pplacer.
@@ -845,16 +889,19 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         placements_file = _MakeTemp(temp_files, extension='.jplace')
         run_process(['pplacer', '-j', CONCURRENCY, '-c', package_loc, '-o',
                      placements_file, '--groups', '10', fixed_alignment_file],
-                     task=self, meta=meta)
+                     task=instance, meta=meta)
 
         # Run Guppy to add in the placements to the original tree.
         tree_file = MakeOutputFile([hmm_family_safe, 'tree'])
         column['tree'] = os.path.basename(tree_file)
         run_process(['guppy', 'tog', '-o', tree_file, placements_file],
-                    task=self, meta=meta)
+                    task=instance, meta=meta)
 
     meta['states']['TAXONOMY'] = True
-    self.update_state(meta=meta)
+    if instance:
+      instance.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running taxonomic classification.'
     # Loads precomputed taxonomy name and id mappings.
     with open('data/taxonomy.pickle') as f:
       taxonomy_data = pickle.load(f)
@@ -971,7 +1018,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                                 name_dictionary))
         # Removes eliminated sequences from raw reads file.
         cell['sequences_hit'] = len(orfs_reported)
-        reads_file = os.path.join('output', cell['reads_file'])
+        reads_file = os.path.join(OUTPUT_DIR, cell['reads_file'])
         old_reads_file = _MakeTemp(temp_files)
         shutil.move(reads_file, old_reads_file)
         with open(old_reads_file) as input_handle:
@@ -1119,13 +1166,13 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
   output['phylogenetic_classification'] = do_phylogenetic_classification
   output['sequence_classification'] = do_sequence_classification
   output['parameters'] = parameters
-  task_id = RunPipeline.request.id
-  conn = sqlite3.connect('databases/results.db')
-  cursor = conn.cursor()
-  cursor.execute('INSERT INTO results VALUES(?, ?, CURRENT_TIMESTAMP, 0)',
+  if task_id >= 0:
+    conn = sqlite3.connect('databases/results.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO results VALUES(?, ?, CURRENT_TIMESTAMP, 0)',
                  (task_id, json.dumps(dict(output))))
-  conn.commit()
-  conn.close()
+    conn.commit()
+    conn.close()
 
   # Cleanup if no exceptions occured.
   for temp_file in temp_files:
