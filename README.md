@@ -24,6 +24,15 @@ The following packages should already be installed on your system:
 Modes
 -----
 
+metAnnotate can be run in different ways. The simplest way to run metAnnotate is
+via command line, which produces a number or output tables and html krona
+charts. However, metAnnotate can be run as a webserver to provide a rich UI that
+can be used to analyze all results. Currently, users must have sudo permissions
+to install the additional requirements necessary to run the server. We hope to
+remove this requirement in the future. The web server can be run as a standalone
+web server, or can be integrated with apache so that it runs on startup all the
+time. See the installation instructions for all three modes below.
+
 Base Installation
 -----------------
 To install:
