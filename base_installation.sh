@@ -2,9 +2,6 @@
 
 echo "Installing command-line version of metAnnotate...\n"
 
-echo "Downloading source.\n"
-git clone https://pavs@bitbucket.org/doxeylab/metannotate.git
-cd metannotate
 mkdir downloads
 mkdir software
 software=`pwd`/software
