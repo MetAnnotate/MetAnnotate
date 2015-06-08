@@ -34,7 +34,7 @@ To install:
 
 Note that you will also need to setup the Refseq.fa and Refseq.fa.ssi file in
 the metannotate/data/ directory. To build Refseq.fa, desired files can be
-downloaded from ftp://ftp.ncbi.nlm.nih.gov/refseq/release/ and comcatenated.
+downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and comcatenated.
 Alternatively, this fasta file can be generated from local NCBI blastdb files.
 To create the ssi index, simply run:
 
@@ -68,7 +68,7 @@ metagenome\_directories\_root.txt contains the root path for all metagenome
 directories that will be read by the program. metagenome\_directories.txt lists
 all the directories in that root directory that should be read as metagenome
 directories (in the case that you have other directories in the root directory
-that shouldn't be interpreted as metagenome directories)."
+that shouldn't be interpreted as metagenome directories).
 
 To run:
 
