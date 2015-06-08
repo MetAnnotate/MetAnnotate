@@ -9,6 +9,13 @@ import shutil
 import sqlite3
 CONCURRENCY = '2'
 
+extra_path = ''
+with open('path.txt') as f:
+  for l in f:
+    extra_path = l.strip()
+    break
+os.environ["PATH"] += os.pathsep + extra_path
+
 def run_process(args, stdout_file=None, meta=None, task=None):
   stdout_handle = (open(stdout_file, 'w') if stdout_file else
                    tempfile.NamedTemporaryFile(dir='tmp'))
