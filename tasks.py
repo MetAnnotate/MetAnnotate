@@ -10,10 +10,13 @@ import sqlite3
 CONCURRENCY = '2'
 
 extra_path = ''
-with open('path.txt') as f:
-  for l in f:
-    extra_path = l.strip()
-    break
+try:
+  with open('path.txt') as f:
+    for l in f:
+      extra_path = l.strip()
+      break
+except:
+  pass
 os.environ["PATH"] += os.pathsep + extra_path
 
 def run_process(args, stdout_file=None, meta=None, task=None):
@@ -606,6 +609,8 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
   meta = {'sub-analyses':len(hmm_files), 'states':{}, 'parameters':parameters}
   temp_files = []
+  global_read_files = []
+  global_annotation_files []
   analysis_index = 0
   # Unique IDS for reads in uploaded files.
   new_orf_files = []
@@ -895,6 +900,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
       output_file = MakeOutputFile(
         [hmm_family_safe, orfs_name_safe, 'annotations'])
       cell['annotations'] = os.path.basename(output_file)
+      global_annotation_files.append(cell['annotations'])
       clade_taxid_counts = Counter()
       clade_representatives = {}
       if do_phylogenetic_classification:
@@ -979,6 +985,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         # Removes eliminated sequences from raw reads file.
         cell['sequences_hit'] = len(orfs_reported)
         reads_file = os.path.join('output', cell['reads_file'])
+        global_read_files.append(cell['reads_file'])
         old_reads_file = _MakeTemp(temp_files)
         shutil.move(reads_file, old_reads_file)
         with open(old_reads_file) as input_handle:
@@ -1095,22 +1102,14 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         [output['columns'][col] for col in output['column_order']], output,
         temp_files)
       # Creates combined annotations file for all HMMs for this dataset.
-      annotation_files = [
-        output['columns'][col]['all_annotations']
-        for col in output['column_order']
-        if 'all_annotations' in output['columns'][col]]
-      if len(annotation_files) > 1:
+      if len(global_annotation_files) > 1:
         combined_output_file = MakeOutputFile(['all_annotations'])
-        _CombineAnnotationFiles(annotation_files, combined_output_file)
+        _CombineAnnotationFiles(global_annotation_files, combined_output_file)
         output['all_annotations'] = os.path.basename(combined_output_file)
       # Creates combined reads file for all HMMs for this dataset.
-      read_files = [
-        output['columns'][col]['all_reads']
-        for col in output['column_order']
-        if 'all_reads' in output['columns'][col]]
-      if len(read_files) > 1:
+      if len(global_read_files) > 1:
         combined_read_file = MakeOutputFile(['all_reads'])
-        _CombineReadFiles(read_files, combined_read_file)
+        _CombineReadFiles(global_read_files, combined_read_file)
         output['all_reads'] = os.path.basename(combined_read_file)
   elif len(hmm_files) == 1 and len(orf_files) == 1:
     # Create single krona for single HMM + dataset analysis.
