@@ -610,7 +610,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
   meta = {'sub-analyses':len(hmm_files), 'states':{}, 'parameters':parameters}
   temp_files = []
   global_read_files = []
-  global_annotation_files []
+  global_annotation_files = []
   analysis_index = 0
   # Unique IDS for reads in uploaded files.
   new_orf_files = []
