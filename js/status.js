@@ -185,6 +185,10 @@ function refresh() {
                         'Compare Taxonomic Abundance</button>');
         compare.click(PrepareCompareSettings);
         status_box.append(compare);
+        if ('all_files' in data['result']) {
+          status_box.append(" ");
+          status_box.append(MakeDownloadAllButton(data['result']['all_files']));
+        }
         status_box.append('<br/><br/>');
         status_box.append(CreateSummary(data['result']));
       }
@@ -672,6 +676,11 @@ function CreateSummary(results) {
     }
   }
   return table;
+}
+
+function MakeDownloadAllButton(path) {
+  return $('<a target="_blank" href="./zip/'+path+
+           '" class="btn btn-default">Download All Files as Zip</a>');
 }
 
 function MakeTreeButton(path, is_refseq) {

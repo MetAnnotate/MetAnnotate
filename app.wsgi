@@ -451,6 +451,15 @@ def retrieve_alignment(msa):
                                                    '%s.faa' % msa),
                      mimetype='text/plain')
 
+@route('/zip/<all_files>')
+def retrieve_zip(all_files):
+  output_file = 'output/%s' % os.path.basename(all_files)
+  if not os.path.isfile(output_file):
+    abort(404, 'Results file not found')
+    return
+  return static_file(all_files, root='output', download=all_files,
+                     mimetype='application/zip, application/octet-stream')
+
 @route('/fasttree-log/<log>')
 def retrieve_log(log):
   output_file = 'output/%s' % os.path.basename(log)

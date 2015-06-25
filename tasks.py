@@ -1144,11 +1144,12 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         '%s?collapse=false' % krona_file_base)
 
   # Zips all output files together.
-  zipped_files = zipfile.ZipFile(
-      MakeOutputFile(['all_files'], extension='zip'), 'w')
+  zipped_files_filename = MakeOutputFile(['all_files'], extension='.zip')
+  zipped_files = zipfile.ZipFile(zipped_files_filename, 'w')
+  output['all_files'] = os.path.basename(zipped_files_filename)
   for file_name in output_files:
     if os.path.exists(file_name):
-      zipped_files.write(file_name)
+      zipped_files.write(file_name, os.path.basename(file_name))
   zipped_files.close()
 
   output['phylogenetic_classification'] = do_phylogenetic_classification
