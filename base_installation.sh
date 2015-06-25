@@ -2,21 +2,20 @@
 
 echo "Installing command-line version of metAnnotate...\n"
 
+software=`pwd`/software
+PATH="${PATH}:${HOME}/.local/bin"
 mkdir downloads
 mkdir software
-software=`pwd`/software
 
 echo "Installing pip.\n"
 cd downloads
-cd python-pip-*
-python setup.py install --user
-PATH="${PATH}:${HOME}/.local/bin"
-cd ..
+wget "https://bootstrap.pypa.io/get-pip.py"
+python get-pip.py --user
 cd ..
 
 echo "Installing EMBOSS transeq.\n"
 cd downloads
-wget ftp://emboss.open-bio.org/pub/EMBOSS/emboss-latest.tar.gz
+wget "ftp://emboss.open-bio.org/pub/EMBOSS/emboss-latest.tar.gz"
 tar -xzf emboss-latest.tar.gz
 cd EMBOSS*
 ./configure --without-x
@@ -32,7 +31,7 @@ pip install --user taxtastic
 pip install —-user lxml
 
 echo "Installing KronaTools.\n"
-./included_software/KronaTools-2.5/install.pl —prefix="${HOME}/.local/"
+./included_software/KronaTools-2.5/install.pl --prefix="${HOME}/.local/bin"
 
 echo "Installing HMMER & Easel mini-applications.\n"
 cd downloads
@@ -92,4 +91,4 @@ rm -f precompute/taxdump.tar.gz
 
 echo "$HOME/.local/bin/" > path.txt
 
-echo "Prerequisites have been installed and the command line version of metAnnotate has been set up.\n\nIMPORTANT: metAnnotate is still not fully ready to be run. You need to download the refseq database and place it in the data directory (metannotate/data/) as \"Refseq.fa\". You also need to place the ssi index of this file in the same directory, as \"Refseq.fa.ssi\". To build Refseq.fa, desired files can be downloaded from \"ftp://ftp.ncbi.nlm.nih.gov/refseq/release/\" and concatenated. Alternatively, this fasta file can be generated from local NCBI blastdb files. To create the ssi index, simply run \"esl-sfetch —index Refseq.fa\" when in the data directory.\n\nTo install the web UI version of metAnnotate, please run the full_installation.sh script with sudo permissions."
+echo -e "Prerequisites have been installed and the command line version of metAnnotate has been set up.\n\nIMPORTANT: metAnnotate is still not fully ready to be run. You need to download the refseq database and place it in the data directory (metannotate/data/) as \"Refseq.fa\". You also need to place the ssi index of this file in the same directory, as \"Refseq.fa.ssi\". To build Refseq.fa, desired files can be downloaded from \"ftp://ftp.ncbi.nlm.nih.gov/refseq/release/\" and concatenated. Alternatively, this fasta file can be generated from local NCBI blastdb files. To create the ssi index, simply run \"esl-sfetch —index Refseq.fa\" when in the data directory.\n\nTo install the web UI version of metAnnotate, please run the full_installation.sh script with sudo permissions."
