@@ -90,7 +90,7 @@ $(function () {
         $('#no-files-modal').modal('show')
         return;
       }
-      var hmm_evalue = parseFloat($('#hmm-evalue').val()) || 1e-3;
+      var hmm_evalue = parseFloat($('#hmm-evalue').val()) || 1e-6;
       var refseq_hmm_evalue = parseFloat($('#refseq-hmm-evalue').val()) || 1e-6;
       var percent_id = parseFloat($('#percent-id').val()) || 0.5;
       var min_coverage = $('#min-coverage-slider').data('value') || 0.0;

@@ -374,7 +374,7 @@ def submit_job():
   try:
     refseq_hmm_evalue = abs(float(refseq_hmm_evalue))
   except ValueError:
-    refseq_hmm_evalue = 1e-3
+    refseq_hmm_evalue = 1e-6
   try:
     min_coverage = abs(float(min_coverage))
   except ValueError:

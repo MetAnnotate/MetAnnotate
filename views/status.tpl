@@ -1,5 +1,9 @@
 % rebase('base.tpl', js='status')
 <h5>Status for job <span style="color:green">{{job}}</span>:</h5>
+<p>Feel free to bookmark this job. You can close and re-open this page at
+   anytime during or after execution. After execution, the job data will be
+   available for at most 31 days.
+ </p>
 <p id="status">Loading...</p>
 <div id="results"></div>
 
