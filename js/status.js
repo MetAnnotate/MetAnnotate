@@ -274,7 +274,7 @@ function CreateCompareSettings(data) {
   });
 
   var compare_button = $('<button type="button" class="btn btn-primary" />');
-  compare_button.text('Generate Compairison Heatmap');
+  compare_button.text('Generate Comparison Heatmap');
   compare_button.click(GenerateCompare);
   compare.append('<br/><br/>');
   compare.append(compare_button);
