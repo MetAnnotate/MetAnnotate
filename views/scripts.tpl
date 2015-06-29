@@ -19,7 +19,7 @@ Load your dataset (here, it is a tab-separated file called data.tsv):
 tb <- read.delim("data.tsv",sep='\t',header=T)
 </pre>
 
-You may now want to look at the counts (# hits for all HMMs) for each dataset
+You may now want to look at the counts (# hits for all HMMs) for each dataset. To normalize these counts, divide them by the total number of reads (DNA) in each dataset.
 
 <pre>
 sort(table(tb[,1]))
@@ -93,7 +93,7 @@ library(pheatmap)
 As before, you need to pick a taxonomic level. This time it is called sColumn
 
 <pre>
-sColumn <- "Closest.Homolog.Genus" #species column for which to do the species breakdown/analysis
+k <- "Closest.Homolog.Genus" #species column for which to do the species breakdown/analysis
 </pre>
 
 Since showing all taxa may be overwhelming, we can choose to show only the most frequent species -- those present greater than some threshold in at least one dataset. This is done with the mpt parameter
@@ -120,7 +120,7 @@ ll <- pheatmap((matr[which(maxPerTaxa > mpt),]),cex=cexVal)
 
 </pre>
 
-<h3>Principal coordinates analysis (PCOA)</h4>
+<h3>Principal coordinates analysis (PCOA)</h3>
 
 PCOA is really easy in R. First load the vegan package
 
@@ -135,4 +135,10 @@ D <- vegdist(t(matr[which(maxPerTaxa > mpt),]))   ## works better when rare spec
 biplot(pcoa(D))
 </pre>
 
+<h3>Generating an OTU table</h3>
+
+otu.tb1 <- table(tb[,k],tb[,2])
+otu.tb2 <- data.frame(rownames(otu.tb1),as.data.frame.matrix(otu.tb1))
+colnames(otu.tb2)[1] <- "OTU"
+write.table(otu.tb2,file="otutable.tsv",sep="\t",row.names=F)
 
