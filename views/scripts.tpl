@@ -136,9 +136,9 @@ biplot(pcoa(D))
 </pre>
 
 <h3>Generating an OTU table</h3>
-
+<pre>
 otu.tb1 <- table(tb[,k],tb[,2])
 otu.tb2 <- data.frame(rownames(otu.tb1),as.data.frame.matrix(otu.tb1))
 colnames(otu.tb2)[1] <- "OTU"
 write.table(otu.tb2,file="otutable.tsv",sep="\t",row.names=F)
-
+</pre>
