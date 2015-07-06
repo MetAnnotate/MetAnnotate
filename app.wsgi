@@ -460,6 +460,14 @@ def retrieve_zip(all_files):
   return static_file(all_files, root='output', download=all_files,
                      mimetype='application/zip, application/octet-stream')
 
+@route('/csv/<data>')
+def retrieve_csv(data):
+  output_file = 'output/%s' % os.path.basename(data)
+  if not os.path.isfile(output_file):
+    abort(404, 'File not found')
+    return
+  return static_file(data, root='output', download=data, mimetype='text/plain')
+
 @route('/fasttree-log/<log>')
 def retrieve_log(log):
   output_file = 'output/%s' % os.path.basename(log)
@@ -488,7 +496,7 @@ def retrieve_tree(tree):
 
 @route('/status/<job>')
 def status_page(job):
-  return template('status', job=job)
+  return template('status', job=job, full_url=request.url)
 
 @route('/job/<job>')
 def check(job):

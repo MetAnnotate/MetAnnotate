@@ -189,6 +189,17 @@ function refresh() {
           status_box.append(" ");
           status_box.append(MakeDownloadAllButton(data['result']['all_files']));
         }
+        if ('raw_counts' in data['result']) {
+          status_box.append("<br/><br/>");
+          status_box.append(
+              MakeDownloadRawCountsButton(data['result']['raw_counts']));
+        }
+        if ('normalized_counts' in data['result']) {
+          status_box.append(" ");
+          status_box.append(
+              MakeDownloadNormalizedCountsButton(
+                  data['result']['normalized_counts']));
+        }
         status_box.append('<br/><br/>');
         status_box.append(CreateSummary(data['result']));
       }
@@ -676,6 +687,16 @@ function CreateSummary(results) {
     }
   }
   return table;
+}
+
+function MakeDownloadRawCountsButton(path) {
+  return $('<a target="_blank" href="./csv/'+path+
+           '" class="btn btn-default">Download Raw Counts</a>');
+}
+
+function MakeDownloadNormalizedCountsButton(path) {
+  return $('<a target="_blank" href="./csv/'+path+
+           '" class="btn btn-default">Download Normalized Counts</a>');
 }
 
 function MakeDownloadAllButton(path) {

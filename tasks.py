@@ -1,4 +1,4 @@
-import sys,os,re,tempfile,time,glob,commands,random,subprocess,traceback
+import sys,os,re,tempfile,time,glob,commands,random,subprocess,traceback,csv
 import cStringIO as StringIO
 import cPickle as pickle
 from collections import defaultdict, Counter
@@ -569,6 +569,35 @@ def _CombineReadFiles(read_files, output_file):
             seen.add(l)
           if not ignore:
             f.write(l)
+
+def _MakeCountsFiles(output, output_files):
+  raw_counts_filename = MakeOutputFile(['raw_counts'],
+                                       extension='.csv',
+                                       all_output_files=output_files)
+  normalized_counts_filename = MakeOutputFile(['normalized_counts'],
+                                              extension='.csv',
+                                              all_output_files=output_files)
+  output['raw_counts'] = os.path.basename(raw_counts_filename)
+  output['normalized_counts'] = os.path.basename(normalized_counts_filename)
+
+  with open(raw_counts_filename, 'w') as raw_counts_file:
+    with open(normalized_counts_filename, 'w') as normalized_counts_file:
+      raw_counts = csv.writer(raw_counts_file)
+      normalized_counts = csv.writer(normalized_counts_file)
+
+      # Titles
+      raw_counts.writerow([''] + output['column_order'])
+      normalized_counts.writerow([''] + output['column_order'])
+
+      # Counts
+      for row_index, row in enumerate(output['rows']):
+        row_name = output['rows'][row_index]['name']
+        total = output['rows'][row_index]['total_sequences']
+        counts = [output['columns'][col]['rows'][row_index]['sequences_hit']
+                  for col in output['column_order']]
+        normalized = ['%.8f' % (float(c) / total) for c in counts]
+        raw_counts.writerow([row_name] + counts)
+        normalized_counts.writerow([row_name] + normalized)
 
 @app.task(bind=True)
 def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
@@ -1142,6 +1171,9 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
       _CreateMergedKronaFile([(column_name, count)], krona_file)
       output['columns'][column_name]['rows'][0]['hmm_krona'] = (
         '%s?collapse=false' % krona_file_base)
+
+
+  _MakeCountsFiles(output, output_files)
 
   # Zips all output files together.
   zipped_files_filename = MakeOutputFile(['all_files'], extension='.zip')
