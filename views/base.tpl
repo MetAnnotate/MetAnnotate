@@ -47,7 +47,8 @@ div > .ui-menu {
   <div class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="/">Submit Job</a></li>
+          <li><a href="/">Welcome</a></li>
+          <li><a href="/submit">Submit Job</a></li>
           <li><a href="/about/">About &amp; Help</a></li>
           <li><a href="/examples/">Example Analyses</a></li>
           <li><a href="/scripts/">Additional Analysis Scripts</a></li>

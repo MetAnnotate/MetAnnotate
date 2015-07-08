@@ -28,6 +28,7 @@
 <body>
 <div class="container">
   <div class="panel">
+    Please email us directly for requests to submit jobs on our local server.<br/><br/>
     <form action="./authenticate/" method="POST">
       <input type="password" name="password"/>
       <input type="submit" value="Enter"/>

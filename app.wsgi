@@ -123,6 +123,10 @@ def subtree():
 
 @route('/')
 def index():
+  return template('welcome')
+
+@route('/submit')
+def index():
   s = request.environ.get('beaker.session')
   if required_password and s.get('authenticated',0) == 0:
     return template('authenticate')
