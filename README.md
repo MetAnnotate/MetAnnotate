@@ -43,11 +43,16 @@ To install:
 
 Note that you will also need to setup the Refseq.fa and Refseq.fa.ssi file in
 the metannotate/data/ directory. To build Refseq.fa, desired files can be
-downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and comcatenated.
-Alternatively, this fasta file can be generated from local NCBI blastdb files.
+downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and concatenated.
+This fasta file can be generated from local NCBI blastdb files.
 To create the ssi index, simply run:
 
-    esl-sfetch —index Refseq.fa
+    esl-sfetch --index Refseq.fa
+
+Alternatively, you can download a 2014 refseq file and index like this:
+
+    wget http://scopepc.uwaterloo.ca/Refseq.fa # 9.1 GB
+    wget http://scopepc.uwaterloo.ca/Refseq.fa.ssi # 1.3 GB
 
 Sample run:
 
