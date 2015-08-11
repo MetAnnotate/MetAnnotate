@@ -14,7 +14,7 @@ Support and Requirements
 ------------------------
 Debian/Ubuntu.
 
-The following packages should already be installed on your system:
+The following packages should already be installed on your system (if not they can be installed with 'sudo apt-get install'):
 
  * python-dev
  * build-essential
@@ -43,13 +43,19 @@ To install:
 
 Note that you will also need to setup the Refseq.fa and Refseq.fa.ssi file in
 the metannotate/data/ directory. To build Refseq.fa, desired files can be
-downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and concatenated.
-This fasta file can be generated from local NCBI blastdb files.
+downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and concatenated like this:
+
+    #This might take a few hours
+    wget ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/complete.nonredundant_protein*.protein.faa.gz
+    zcat *.faa.gz >Refseq.fa
+    
 To create the ssi index, simply run:
 
+    ../software/hmmer/binaries/esl-sfetch --index Refseq.fa
+    #or if esl-sfetch is in your path
     esl-sfetch --index Refseq.fa
 
-Alternatively, you can download a 2014 refseq file and index like this:
+Alternatively, you can download a 2014 refseq file and index like this (very slow):
 
     wget http://scopepc.uwaterloo.ca/Refseq.fa # 9.1 GB
     wget http://scopepc.uwaterloo.ca/Refseq.fa.ssi # 1.3 GB
