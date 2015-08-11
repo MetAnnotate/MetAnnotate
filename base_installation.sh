@@ -24,7 +24,7 @@ if [ ! `which transeq` ] ; then
   cd MYEMBOSS*
   ./configure --without-x
   make
-  cp -R emboss/ "$software"/
+  cp -R emboss/"$software"/
   ln -s "$software"/emboss/transeq ~/.local/bin/transeq
   cd ..
   cd ..
@@ -36,6 +36,7 @@ pip install --user celery
 pip install --user taxtastic
 pip install --user lxml
 pip install --user python-gflags
+pip install --user ete2
 
 echo "Installing KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
