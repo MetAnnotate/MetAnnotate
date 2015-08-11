@@ -77,7 +77,7 @@
           </label>
         </div>
         <input type="text" class="form-control" id="hmm-evalue"
-               placeholder="1e-3">
+               placeholder="1e-6">
       </div>
     </div><br/><br/>
     <div class="col-md-12">

@@ -123,6 +123,10 @@ def subtree():
 
 @route('/')
 def index():
+  return template('welcome')
+
+@route('/submit')
+def index():
   s = request.environ.get('beaker.session')
   if required_password and s.get('authenticated',0) == 0:
     return template('authenticate')
@@ -374,7 +378,7 @@ def submit_job():
   try:
     refseq_hmm_evalue = abs(float(refseq_hmm_evalue))
   except ValueError:
-    refseq_hmm_evalue = 1e-3
+    refseq_hmm_evalue = 1e-6
   try:
     min_coverage = abs(float(min_coverage))
   except ValueError:
@@ -451,6 +455,23 @@ def retrieve_alignment(msa):
                                                    '%s.faa' % msa),
                      mimetype='text/plain')
 
+@route('/zip/<all_files>')
+def retrieve_zip(all_files):
+  output_file = 'output/%s' % os.path.basename(all_files)
+  if not os.path.isfile(output_file):
+    abort(404, 'Results file not found')
+    return
+  return static_file(all_files, root='output', download=all_files,
+                     mimetype='application/zip, application/octet-stream')
+
+@route('/csv/<data>')
+def retrieve_csv(data):
+  output_file = 'output/%s' % os.path.basename(data)
+  if not os.path.isfile(output_file):
+    abort(404, 'File not found')
+    return
+  return static_file(data, root='output', download=data, mimetype='text/plain')
+
 @route('/fasttree-log/<log>')
 def retrieve_log(log):
   output_file = 'output/%s' % os.path.basename(log)
@@ -479,7 +500,7 @@ def retrieve_tree(tree):
 
 @route('/status/<job>')
 def status_page(job):
-  return template('status', job=job)
+  return template('status', job=job, full_url=request.url)
 
 @route('/job/<job>')
 def check(job):

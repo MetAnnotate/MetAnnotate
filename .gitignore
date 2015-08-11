@@ -20,3 +20,6 @@ metagenome_directories.txt
 celery.pw
 metannotate.pw
 metagenome_directories_root.txt
+downloads/*
+software/*
+path.txt
