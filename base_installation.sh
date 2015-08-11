@@ -21,7 +21,7 @@ if [ ! `which transeq` ] ; then
   cd downloads
   wget "ftp://emboss.open-bio.org/pub/EMBOSS/MYEMBOSS-6.5.1.tar.gz"
   tar -xzf MYEMBOSS-6.5.1.tar.gz
-  cd EMBOSS*
+  cd MYEMBOSS*
   ./configure --without-x
   make
   cp -R emboss/ "$software"/
