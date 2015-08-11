@@ -34,7 +34,8 @@ echo "Installing python packages through pip.\n"
 pip install --user numpy
 pip install --user celery
 pip install --user taxtastic
-pip install —-user lxml
+pip install --user lxml
+pip install --user python-gflags
 
 echo "Installing KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
