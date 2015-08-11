@@ -4,85 +4,105 @@ echo "Installing command-line version of metAnnotate...\n"
 
 software=`pwd`/software
 PATH="${PATH}:${HOME}/.local/bin"
-mkdir downloads
-mkdir software
+
+mkdir -p downloads
+mkdir -p software
 
 echo "Installing pip.\n"
-cd downloads
-wget "https://bootstrap.pypa.io/get-pip.py"
-python get-pip.py --user
-cd ..
+if [ ! `which pip` ] ; then
+  cd downloads
+  wget "https://bootstrap.pypa.io/get-pip.py"
+  python get-pip.py --user
+  cd ..
+fi
 
 echo "Installing EMBOSS transeq.\n"
-cd downloads
-wget "ftp://emboss.open-bio.org/pub/EMBOSS/emboss-latest.tar.gz"
-tar -xzf emboss-latest.tar.gz
-cd EMBOSS*
-./configure --without-x
-make
-cp -R emboss/ "$software"/
-ln -s "$software"/emboss/transeq ~/.local/bin/transeq
-cd ..
-cd ..
+if [ ! `which transeq` ] ; then
+  cd downloads
+  wget "ftp://emboss.open-bio.org/pub/EMBOSS/MYEMBOSS-6.5.1.tar.gz"
+  tar -xzf emboss-latest.tar.gz
+  cd EMBOSS*
+  ./configure --without-x
+  make
+  cp -R emboss/ "$software"/
+  ln -s "$software"/emboss/transeq ~/.local/bin/transeq
+  cd ..
+  cd ..
+fi
 
 echo "Installing python packages through pip.\n"
+pip install --user numpy
 pip install --user celery
 pip install --user taxtastic
 pip install —-user lxml
 
 echo "Installing KronaTools.\n"
-./included_software/KronaTools-2.5/install.pl --prefix="${HOME}/.local/bin"
+if [ ! `which ktImportText` ] ; then
+  ./included_software/KronaTools-2.5/install.pl --prefix="${HOME}/.local/bin"
+fi
 
 echo "Installing HMMER & Easel mini-applications.\n"
-cd downloads
-wget "ftp://selab.janelia.org/pub/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-x86_64.tar.gz"
-tar -xzf hmmer-3.1b1-linux-intel-x86_64.tar.gz
-cd hmmer*
-./configure
-make
-cp -R . "$software"/hmmer/
-ln -s "$software"/hmmer/binaries/hmmstat ~/.local/bin/hmmstat
-ln -s "$software"/hmmer/binaries/hmmsearch ~/.local/bin/hmmsearch
-ln -s "$software"/hmmer/binaries/hmmalign ~/.local/bin/hmmalign
-ln -s "$software"/hmmer/binaries/esl-reformat ~/.local/bin/esl-reformat
-ln -s "$software"/hmmer/binaries/esl-sfetch ~/.local/bin/esl-sfetch
-cd ..
-cd ..
+if [ ! `which hmmsearch` ] ; then
+  cd downloads
+  wget "ftp://selab.janelia.org/pub/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-x86_64.tar.gz"
+  tar -xzf hmmer-3.1b1-linux-intel-x86_64.tar.gz
+  cd hmmer*
+  ./configure
+  make
+  cp -R . "$software"/hmmer/
+  ln -s "$software"/hmmer/binaries/hmmstat ~/.local/bin/hmmstat
+  ln -s "$software"/hmmer/binaries/hmmsearch ~/.local/bin/hmmsearch
+  ln -s "$software"/hmmer/binaries/hmmalign ~/.local/bin/hmmalign
+  ln -s "$software"/hmmer/binaries/esl-reformat ~/.local/bin/esl-reformat
+  ln -s "$software"/hmmer/binaries/esl-sfetch ~/.local/bin/esl-sfetch
+  cd ..
+  cd ..
+fi
 
 echo "Installing USEARCH.\n"
-ln -s `pwd`"/included_software/usearch" ~/.local/bin/usearch
+if [ ! `which usearch` ] ; then
+  ln -s `pwd`"/included_software/usearch" ~/.local/bin/usearch
+fi
 
-echo "Installing USEARCH.\n"
-cd downloads
-wget "http://www.microbesonline.org/fasttree/FastTreeMP"
-mv FastTreeMP ~/.local/bin/
-chmod a+x ~/.local/bin/FastTreeMP
-cd ..
+echo "Installing FastTreeMP.\n"
+if [ ! `which FastTreeMP` ] ; then
+  cd downloads
+  wget "http://www.microbesonline.org/fasttree/FastTreeMP"
+  mv FastTreeMP ~/.local/bin/
+  chmod a+x ~/.local/bin/FastTreeMP
+  cd ..
+fi
 
 echo "Installing pplacer and guppy.\n"
-cd downloads
-wget "http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz"
-tar -xzf pplacer-v1.1-Linux.tar.gz 
-cd pplacer*
-mv pplacer ~/.local/bin/
-mv guppy ~/.local/bin/
-cd ..
-cd ..
+if [ ! `which guppy` ] ; then
+  cd downloads
+  wget "http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz"
+  tar -xzf pplacer-v1.1-Linux.tar.gz 
+  cd pplacer*
+  mv pplacer ~/.local/bin/
+  mv guppy ~/.local/bin/
+  cd ..
+  cd ..
+fi
 
 echo "Downloading and indexing taxonomy info.\n"
-cd precompute
-wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
-tar -zxf taxdump.tar.gz
-grep 'scientific name' names.dmp > trimmed.names.dmp
-python make_taxonomy_pickle.py
-cd ..
+if [ ! -e data/taxonomy.pickle ] ; then
+  cd precompute
+  wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
+  tar -zxf taxdump.tar.gz
+  grep 'scientific name' names.dmp > trimmed.names.dmp
+  python make_taxonomy_pickle.py
+  cd ..
+fi
 
 echo "Downloading and indexing gi number to taxid mappings.\n"
-cd precompute
-wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz"
-gunzip gi_taxid_prot.dmp.gz
-mv gi_taxid_prot.dmp ../data/
-cd ..
+if [ ! -e data/gi_taxid_prot.dmp ] ; then
+  cd precompute
+  wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz"
+  gunzip gi_taxid_prot.dmp.gz
+  mv gi_taxid_prot.dmp ../data/
+  cd ..
+fi
 
 rm -rf downloads
 rm -f precompute/gc.prt
