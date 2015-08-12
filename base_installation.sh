@@ -24,7 +24,7 @@ if [ ! `which transeq` ] ; then
   cd MYEMBOSS*
   ./configure --without-x
   make
-  cp -R emboss/"$software"/
+  cp -R emboss/ "$software"/
   ln -s "$software"/emboss/transeq ~/.local/bin/transeq
   cd ..
   cd ..

@@ -729,7 +729,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
       print >> sys.stderr, 'Running hmmsearch on provided sequences.'
     (read_files,hmm_hit_files, safe_orf_names, hmm_hit_evalues) = FindOrfHits(
        orf_files, hmm_evalue, min_alignment, filter_multi_orf, hmm_file,
-       hmm_family_safe, temp_files, column, self, meta, output_files)
+       hmm_family_safe, temp_files, column, instance, meta, output_files)
     meta['total_orfs'] = sum(len(evals) for evals in hmm_hit_evalues)
     if meta['total_orfs'] == 0:
       if not instance:
