@@ -160,7 +160,8 @@ def _CreateMergedKronaAndAssignLinks(dataset_type, krona_name, dataset_names,
                                      main_name, counts, elements, main_element,
                                      temp_files, output_files):
   krona_file = MakeOutputFile([krona_name, 'krona'],
-                               all_output_files=output_files)
+                               all_output_files=output_files,
+                              extension='.html')
   krona_file_base = os.path.basename(krona_file)
   combined_clade_counts = _MakeTemp(temp_files)
   run_process(['cat'] + [count for count in counts if count],
@@ -291,7 +292,8 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
 
     # Retrieves sequences for matching hits. Avoid SeqIO for speed.
     seqs_file = MakeOutputFile([hmm_family_safe, orfs_name_safe, 'reads'],
-                               all_output_files=output_files)
+                               all_output_files=output_files,
+                               extension='.fa')
     seen = set()
     with open(orf_file) as input_handle:
       with open(seqs_file, 'w') as output_handle:
@@ -885,11 +887,13 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
         shutil.move(reference_msa, refseq_alignment_file)
         column['refseq_msa'] = os.path.basename(refseq_alignment_file)
         tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'],
-                                   all_output_files=output_files)
+                                   all_output_files=output_files,
+                                   extension='.newick')
         shutil.move(reference_tree, tree_file)
         column['refseq_tree'] = os.path.basename(tree_file)
         log_file = MakeOutputFile([hmm_family_safe, 'refseq', 'fastree',
-                                   'log'], all_output_files=output_files)
+                                   'log'], all_output_files=output_files,
+                                  extension='.txt')
         shutil.move(reference_log, log_file)
         column['refseq_log'] = os.path.basename(log_file)
       else:
@@ -916,10 +920,12 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
           print >> sys.stderr, 'Running FastTree.'
         os.environ['OMP_NUM_THREADS'] = CONCURRENCY
         tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'],
-                                   all_output_files=output_files)
+                                   all_output_files=output_files,
+                                   extension='.newick')
         column['refseq_tree'] = os.path.basename(tree_file)
         log_file = MakeOutputFile([hmm_family_safe, 'refseq', 'fastree',
-                                   'log'], all_output_files=output_files)
+                                   'log'], all_output_files=output_files,
+                                   extension='.txt')
         column['refseq_log'] = os.path.basename(log_file)
         args = ['FastTreeMP','-out', tree_file, '-log', log_file, '-mlnni',
                 '4']
@@ -944,7 +950,8 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
 
         # Run Guppy to add in the placements to the original tree.
         tree_file = MakeOutputFile([hmm_family_safe, 'tree'],
-                                   all_output_files=output_files)
+                                   all_output_files=output_files,
+                                   extension='.newick')
         column['tree'] = os.path.basename(tree_file)
         run_process(['guppy', 'tog', '-o', tree_file, placements_file],
                     task=instance, meta=meta)
@@ -986,7 +993,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
         continue
       output_file = MakeOutputFile(
         [hmm_family_safe, orfs_name_safe, 'annotations'],
-        all_output_files=output_files)
+        all_output_files=output_files, extension='.tsv')
 
       cell['annotations'] = os.path.basename(output_file)
       global_annotation_files.append(cell['annotations'])
@@ -1132,7 +1139,8 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
     if len(annotation_files) > 1:
       combined_output_file = MakeOutputFile([hmm_family_safe,
                                              'all_annotations'],
-                                             all_output_files=output_files)
+                                             all_output_files=output_files,
+                                             extension='.tsv')
       _CombineAnnotationFiles(annotation_files, combined_output_file)
       column['all_annotations'] = os.path.basename(combined_output_file)
 
@@ -1141,7 +1149,8 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                   if 'reads_file' in cell]
     if len(read_files) > 1:
       combined_read_file = MakeOutputFile([hmm_family_safe, 'all_reads'],
-                                          all_output_files=output_files)
+                                          all_output_files=output_files,
+                                          extension='.fa')
       _CombineReadFiles(read_files, combined_read_file)
       column['all_reads'] = os.path.basename(combined_read_file)
 
@@ -1165,7 +1174,8 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
       if len(annotation_files) > 1:
         combined_output_file = MakeOutputFile([row['name'],
                                               'all_annotations'],
-                                              all_output_files=output_files)
+                                              all_output_files=output_files,
+                                              extension='.tsv')
         _CombineAnnotationFiles(annotation_files, combined_output_file)
         row['all_annotations'] = os.path.basename(combined_output_file)
       # Creates combined reads file for all HMMs for this dataset.
@@ -1175,7 +1185,8 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
         if 'reads_file' in output['columns'][col]['rows'][row_index]]
       if len(read_files) > 1:
         combined_read_file = MakeOutputFile([row['name'], 'all_reads'],
-                                            all_output_files=output_files)
+                                            all_output_files=output_files,
+                                            extension='.fa')
         _CombineReadFiles(read_files, combined_read_file)
         row['all_reads'] = os.path.basename(combined_read_file)
 
@@ -1199,20 +1210,23 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
       # Creates combined annotations file for all HMMs for this dataset.
       if len(global_annotation_files) > 1:
         combined_output_file = MakeOutputFile(['all_annotations'],
-                                              all_output_files=output_files)
+                                              all_output_files=output_files,
+                                              extension='.tsv')
         _CombineAnnotationFiles(global_annotation_files, combined_output_file)
         output['all_annotations'] = os.path.basename(combined_output_file)
       # Creates combined reads file for all HMMs for this dataset.
       if len(global_read_files) > 1:
         combined_read_file = MakeOutputFile(['all_reads'],
-                                            all_output_files=output_files)
+                                            all_output_files=output_files,
+                                            extension='.fa')
         _CombineReadFiles(global_read_files, combined_read_file)
         output['all_reads'] = os.path.basename(combined_read_file)
   elif len(hmm_files) == 1 and len(orf_files) == 1:
     # Create single krona for single HMM + dataset analysis.
     column_name = output['column_order'][0]
     if lineage_files[column_name][0]:
-      krona_file = MakeOutputFile(['krona'], all_output_files=output_files)
+      krona_file = MakeOutputFile(
+          ['krona'], all_output_files=output_files, extension='.html')
       krona_file_base = os.path.basename(krona_file)
       count = lineage_files[column_name][0]
       _CreateMergedKronaFile([(column_name, count)], krona_file)
@@ -1241,6 +1255,10 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                  (task_id, json.dumps(dict(output))))
     conn.commit()
     conn.close()
+
+  print >> sys.stderr, 'Job ran successfully. The following files are now available:\n'
+  for file_name in output_files:
+    print >> sys.stderr, file_name
 
   # Cleanup if no exceptions occured.
   for temp_file in temp_files:

@@ -4,6 +4,7 @@ Table of Contents
 **[Support and Requirements](#markdown-header-support-and-requirements)**  
 **[metAnnotate Modes](#markdown-header-modes)**  
 **[Installing Base/Command Line Version](#markdown-header-base-installation)**  
+**[Concurrency](#markdown-header-concurrency)**  
 **[Built-in Webserver](#markdown-header-built-in-webserver)**  
 **[Configure With Apache and Celeryd](#markdown-header-configure-with-apache-and-celeryd)**  
 
@@ -12,7 +13,7 @@ Installation Instructions
 
 Support and Requirements
 ------------------------
-Debian/Ubuntu.
+Debian/Ubuntu, with at least 6GB of space + the space required to store the Refseq database.
 
 The following packages should already be installed on your system (if not they can be installed with 'sudo apt-get install'):
 
@@ -52,6 +53,10 @@ downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and concatenated li
     
 To create the ssi index, simply run:
 
+    ~/.local/bin/esl-sfetch --index Refseq.fa
+
+Or, if you already had esl-sfetch available on your system:
+
     esl-sfetch --index Refseq.fa
 
 Alternatively, you can download a 2014 refseq file and index like this (very slow):
@@ -66,6 +71,10 @@ Sample run:
 More options:
 
     python run_metannotate.py --help
+
+Concurrency
+-----------
+You can speed up metannotate by specifying a greater concurrency in metannotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
 
 Built-in Webserver
 ------------------
