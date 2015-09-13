@@ -19,9 +19,9 @@ fi
 echo "Installing EMBOSS transeq.\n"
 if [ ! `which transeq` ] ; then
   cd downloads
-  wget "ftp://emboss.open-bio.org/pub/EMBOSS/MYEMBOSS-6.5.1.tar.gz"
-  tar -xzf MYEMBOSS-6.5.1.tar.gz
-  cd MYEMBOSS*
+  wget "ftp://emboss.open-bio.org/pub/EMBOSS/old/6.5.0/EMBOSS-6.5.7.tar.gz"
+  tar -xzf EMBOSS-6.5.7.tar.gz
+  cd EMBOSS*
   ./configure --without-x
   make
   cp -R emboss/ "$software"/
@@ -40,7 +40,10 @@ pip install --user ete2
 
 echo "Installing KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
-  ./included_software/KronaTools-2.5/install.pl --prefix="${HOME}/.local/bin"
+  cd included_software/KronaTools-2.5/
+  ./install.pl --prefix "${HOME}/.local/"
+  cd ..
+  cd ..
 fi
 
 echo "Installing HMMER & Easel mini-applications.\n"
