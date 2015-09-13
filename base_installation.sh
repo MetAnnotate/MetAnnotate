@@ -47,7 +47,7 @@ if [ ! `which ktImportText` ] ; then
 fi
 
 echo "Installing HMMER & Easel mini-applications.\n"
-if [ ! `which hmmsearch` ] ; then
+if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   cd downloads
   wget "ftp://selab.janelia.org/pub/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-x86_64.tar.gz"
   tar -xzf hmmer-3.1b1-linux-intel-x86_64.tar.gz
