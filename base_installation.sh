@@ -31,12 +31,12 @@ if [ ! `which transeq` ] ; then
 fi
 
 echo "Installing python packages through pip.\n"
-pip install --user numpy
-pip install --user celery
-pip install --user taxtastic
-pip install --user lxml
-pip install --user python-gflags
-pip install --user ete2
+~/.local/bin/pip install --user numpy --ignore-installed
+~/.local/bin/pip install --user celery --ignore-installed
+~/.local/bin/pip install --user taxtastic --ignore-installed
+~/.local/bin/pip install --user lxml --ignore-installed
+~/.local/bin/pip install --user python-gflags --ignore-installed
+~/.local/bin/pip install --user ete2 --ignore-installed
 
 echo "Installing KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
