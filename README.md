@@ -72,7 +72,7 @@ Or simply:
 
     bash test_metannotate.sh
 
-Note that in the example above, a test [small] reference database was specified. If not specified, the default data/Refseq.fa database is used. More options:
+Note that in the example above, a [tiny] test reference database was specified. If not specified, the default data/Refseq.fa database is used. More options:
 
     python run_metannotate.py --help
 
