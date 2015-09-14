@@ -12,7 +12,7 @@ echo "Installing pip.\n"
 if [ ! `which pip` ] ; then
   cd downloads
   wget "https://bootstrap.pypa.io/get-pip.py"
-  python get-pip.py --user
+  python get-pip.py --user --ignore-installed
   cd ..
 fi
 
