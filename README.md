@@ -66,9 +66,13 @@ Alternatively, you can download a 2014 refseq file and index like this (very slo
 
 Sample run:
 
-    python run_metannotate.py --orf_files=../sample_metagenomes/4478943.3.transeq.fa --hmm_files=data/hmms/TIGR00665.HMM --output_dir=my_output --tmp_dir=my_tmp
+    python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
-More options:
+Or simply:
+
+    bash test_metannotate.sh
+
+Note that in the example above, a test [small] reference database was specified. If not specified, the default data/Refseq.fa database is used. More options:
 
     python run_metannotate.py --help
 

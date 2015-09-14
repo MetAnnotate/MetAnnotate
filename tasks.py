@@ -13,6 +13,7 @@ CONCURRENCY = '2'
 CONCURRENCY_SPECIFIED = False
 OUTPUT_DIR = 'output'
 TMP_DIR = 'tmp'
+REFERENCE_DATABASE = 'data/Refseq.fa'
 
 extra_path = ''
 try:
@@ -418,7 +419,7 @@ def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
   run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
                '-E' if filter_multi else '--domE', str(hmm_evalue),
                '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
-               'data/Refseq.fa'], task=task, meta=meta)
+               REFERENCE_DATABASE], task=task, meta=meta)
   # Stop prematurealy if no refseq hits.
   if os.stat(refseq_msa_file).st_size == 0:
     return (None, set(), {})
@@ -788,7 +789,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
 
     full_refseqs_file = _MakeTemp(temp_files)
     run_process(['esl-sfetch', '-o', full_refseqs_file, '-f',
-                 'data/Refseq.fa', refseq_ids_file])
+                 REFERENCE_DATABASE, refseq_ids_file])
 
     fixed_refseqs_file_full = _MakeTemp(temp_files)
     with open(full_refseqs_file) as input_file:

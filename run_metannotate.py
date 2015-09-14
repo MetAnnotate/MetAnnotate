@@ -35,6 +35,11 @@ gflags.DEFINE_string('reference_tree',
                      'reference_log. Providing these will allow you to re-use '
                      'alignment and FastTree files from previous jobs, '
                      'speeding up the current job.')
+gflags.DEFINE_string('reference_database',
+                     'data/Refseq.fa',
+                     'Reference database that is used to search for known '
+                     'homologs. By default, this is the refseq fasta file '
+                     'in the data directory.')
 gflags.DEFINE_bool('filter_multi_orf',
                    False,
                    'Filter ORFS/reads with multiple HMM hits.')
@@ -96,7 +101,6 @@ def main(argv):
                for f in FLAGS.hmm_files]
   orf_files = [(os.path.splitext(os.path.basename(f))[0], f)
                for f in FLAGS.orf_files]
-  print orf_files
 
   for _, hmm_file in hmm_files:
     if not os.path.isfile(hmm_file):
@@ -134,12 +138,18 @@ def main(argv):
     reference_log = None
     reference_msa = None
 
+  reference_database = FLAGS.reference_database
+  if not reference_database or not os.path.isfile(reference_database):
+    print >> sys.stderr, 'reference_database not provided or does not exist'
+    sys.exit(1)
+  if not os.path.isfile('%s.ssi' % reference_database):
+    print >> sys.stderr, 'Missing reference_database ssi index.'
+    sys.exit(1)
 
   filter_multi_orf = FLAGS.filter_multi_orf
   filter_multi_refseq = FLAGS.filter_multi_refseq
   transeq = FLAGS.do_transeq
   force_msa = FLAGS.force_msa
-
   
   mode = FLAGS.run_mode
   if mode not in ('sequence', 'phylogenetic', 'both'):
@@ -178,6 +188,7 @@ def main(argv):
       
   tasks.OUTPUT_DIR = output
   tasks.TMP_DIR = tmp
+  tasks.REFERENCE_DATABASE = reference_database
   tasks.RunPipelineReal(
       None, -1, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
       usearch_percent_id, do_sequence_classification,
