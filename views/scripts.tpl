@@ -122,10 +122,11 @@ ll <- pheatmap((matr[which(maxPerTaxa > mpt),]),cex=cexVal)
 
 <h3>Principal coordinates analysis (PCOA)</h3>
 
-PCOA is really easy in R. First load the vegan package
+PCOA is really easy in R. First load the vegan and ape packages
 
 <pre>
 library(vegan)
+library(ape)
 </pre>
 
 Just run:
