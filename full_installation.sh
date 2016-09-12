@@ -5,9 +5,7 @@ echo "Installing UI version of metAnnotate...\n\nNote that you should have alrea
 PATH="${PATH}:${HOME}/.local/bin"
 
 echo "Installing packages and python modules.\n"
-apt-get install python-mysqldb
-apt-get install rabbitmq-server
-apt-get install sqlite3
+sudo apt-get install -y python-mysqldb rabbitmq-server libssl-dev libffi-dev sqlite3
 pip install bottle
 pip install beaker
 pip install ete2
@@ -33,3 +31,4 @@ rm -f precompute/TIGRFAMs_*.tar.gz
 rm -f precompute/Pfam-A.hmm
 
 echo -e "Done installing the UI version of metAnnotate.\n\nIMPORTANT: The UI version is not yet ready for running, as you will still need to configure the metagenome directories files. You need to create 2 files:\n\nmetagenome_directories_root.txt\nmetagenome_directories.txt\n\nSee metagenome_directories_sample.txt and metagenome_directories_root_sample.txt for reference. These files need to be placed in the main metannotate direcoty (current directory). metagenome_directories_root.txt contains the root path for all metagenome directories that will be read by the program. metagenome_directories.txt lists all the directories in that root directory that should be read as metagenome directories (in the case that you have other directories in the root directory that shouldn't be interpreted as metagenome directories)."
+

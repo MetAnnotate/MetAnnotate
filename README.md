@@ -22,6 +22,8 @@ The following packages should already be installed on your system (if not they c
  * default-jre
  * git
 
+Note that in [One Command Install](#markdown-header-one-command-install), the dependencies are _automatically installed_
+
 Modes
 -----
 
@@ -34,7 +36,26 @@ remove this requirement in the future. The web server can be run as a standalone
 web server, or can be integrated with apache so that it runs on startup all the
 time. See the installation instructions for all three modes below.
 
-Base Installation
+One Command Install (install all dependencies, command-line and webserver)
+----
+
+For Ubuntu:14.04: 
+
+Step 1: 
+```bash
+sudo apt-get update
+if [ ! `which git` ]; then
+  sudo apt-get install -y git
+fi
+git clone --depth=1 https://bitbucket.org/doxeylab/metannotate.git
+cd metannotate
+bash one_command_install.sh
+```
+
+Step2: 
+open browser at localhost:8080, you should now see a running metAnnotate server
+
+Base Installation (Command line only)
 -----------------
 To install:
 
