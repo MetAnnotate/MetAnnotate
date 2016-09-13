@@ -8,7 +8,9 @@ if [ ! `which wget` ]; then
     sudo apt-get -y install wget
 fi
 
+echo "installing all dependencies"
 sudo apt-get install -y python-dev build-essential default-jre
+echo "dependency installation complete, running main installation"
 
 bash ./base_installation.sh
 bash ./full_installation.sh
@@ -33,16 +35,12 @@ bash test_metannotate.sh
 # should expect 2 annotation files in test_output
 count=0
 for file in rpoB_0_MetagenomeTest_0_annotations_*.tsv; do count=$((count+1)); done
-if [ $count -ne 2 ]; then
+if [ $count -ne 1 ]; then
     >&2 echo "Testing failed, please check the output for error. Did you have the right permission to files? "
     exit 1
 fi
 
 echo "=======Test passed====="
 
-rabbitmq-server -detached
-nohup python app.wsgi local >out.txt 2>&1 &
-# saving app pid 
-echo `ps -ef | grep "python app.wsgi local" | head -1 | awk '{print $2}'` > server.pid
-
+bash start-server.sh
 

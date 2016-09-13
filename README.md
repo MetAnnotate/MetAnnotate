@@ -2,7 +2,6 @@ Table of Contents
 =========================
 
 **[Support and Requirements](#markdown-header-support-and-requirements)**  
-**[metAnnotate Modes](#markdown-header-modes)**  
 **[Installing Base/Command Line Version](#markdown-header-base-installation)**  
 **[Concurrency](#markdown-header-concurrency)**  
 **[Built-in Webserver](#markdown-header-built-in-webserver)**  
@@ -15,31 +14,27 @@ Support and Requirements
 ------------------------
 Debian/Ubuntu, with at least 6GB of space + the space required to store the Refseq database.
 
-The following packages should already be installed on your system (if not they can be installed with 'sudo apt-get install'):
+The following packages are required. Note that in [One Command Install](#markdown-header-one-command-install), the dependencies are _automatically_installed
 
- * python-dev
+ * python-dev (version 2.7)
  * build-essential
  * default-jre
  * git
+ * wget
+ * python-mysqldb 
+ * rabbitmq-server 
+ * libssl-dev 
+ * libffi-dev 
+ * sqlite3
 
-Note that in [One Command Install](#markdown-header-one-command-install), the dependencies are _automatically installed_
 
-Modes
------
-
-metAnnotate can be run in different ways. The simplest way to run metAnnotate is
-via command line, which produces a number or output tables and html krona
-charts. However, metAnnotate can be run as a webserver to provide a rich UI that
-can be used to analyze all results. Currently, users must have sudo permissions
-to install the additional requirements necessary to run the server. We hope to
-remove this requirement in the future. The web server can be run as a standalone
-web server, or can be integrated with apache so that it runs on startup all the
-time. See the installation instructions for all three modes below.
 
 One Command Install (install all dependencies, command-line and webserver)
 ----
 
 For Ubuntu:14.04: 
+
+*NOTE* machine root password is required and will be asked for
 
 Step 1: 
 ```bash
@@ -50,50 +45,19 @@ fi
 git clone --depth=1 https://bitbucket.org/doxeylab/metannotate.git
 cd metannotate
 bash one_command_install.sh
+# enter password as required
 ```
 
-Step2: 
-open browser at localhost:8080, you should now see a running metAnnotate server
-
-Base Installation (Command line only)
------------------
-To install:
-
-    git clone https://bitbucket.org/doxeylab/metannotate.git
-    cd metannotate
-    bash base_installation.sh
-
-Note that you will also need to setup the Refseq.fa and Refseq.fa.ssi file in
-the metannotate/data/ directory. To build Refseq.fa, desired files can be
-downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and concatenated like this:
-
-    cd data/
-    #This might take a few hours
-    wget ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/complete.nonredundant_protein*.protein.faa.gz
-    zcat *.faa.gz >Refseq.fa
-    
-To create the ssi index, simply run:
-
-    ~/.local/bin/esl-sfetch --index Refseq.fa
-
-Or, if you already had esl-sfetch available on your system:
-
-    esl-sfetch --index Refseq.fa
-
-Alternatively, you can download a 2014 refseq file and index like this (very slow):
-
-    wget http://scopepc.uwaterloo.ca/Refseq.fa # 9.1 GB
-    wget http://scopepc.uwaterloo.ca/Refseq.fa.ssi # 1.3 GB
 
 Sample run:
+---
 
     python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
-Or simply:
+Note that in the example above, a [tiny] test reference database was specified to make process faster. If not specified, the default data/Refseq.fa database is used. You should now see run outputs in `test_output` directory. 
 
-    bash test_metannotate.sh
 
-Note that in the example above, a [tiny] test reference database was specified. If not specified, the default data/Refseq.fa database is used. More options:
+For more options:
 
     python run_metannotate.py --help
 
@@ -103,33 +67,37 @@ You can speed up metannotate by specifying a greater concurrency in metannotate/
 
 Built-in Webserver
 ------------------
-To install, first follow the base installation instructions above, and then run
-the following script in the metannotate directory:
+The web server is installed as part of *One Command Install*
 
-    sudo bash full_installation.sh
-
-To finish the installation, you will still need to configure the metagenome
-directory files. You need to create 2 files:
+There are two files that provide additional configuration:
 
  * metagenome\_directories\_root.txt
  * metagenome\_directories.txt
  
-See metagenome\_directories\_sample.txt and
-metagenome\_directories\_root\_sample.txt for reference. These files need to be
-placed in the main metannotate direcoty (current directory).
+These files are already placed in the main metannotate directory.
+
 metagenome\_directories\_root.txt contains the root path for all metagenome
 directories that will be read by the program. metagenome\_directories.txt lists
 all the directories in that root directory that should be read as metagenome
 directories (in the case that you have other directories in the root directory
 that shouldn't be interpreted as metagenome directories).
 
-To run:
+To start server:
 
-    python app.wsgi local >out.txt 2>&1 &  
+    bash start-server.sh 
+    # enter password as prompted
 
-The output will contain both web server and celery output.
+To stop server: 
 
-Configure with Apache and Celeryd
+    bash stop.sh
+    # enter password as prompted
+
+
+Output of server is at `out.txt` for debugging purposes.
+
+Occasionally (when no job is running), you can run `rm tmp/*` to free up disk space. 
+
+Configure with Apache and Celeryd (More technical)
 ---------------------------------
 
 Configuring the app to run with an Apache server and an existing celery daemon
