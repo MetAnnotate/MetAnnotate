@@ -2,6 +2,7 @@
 
 echo "Installing command-line version of metAnnotate...\n"
 
+metAnnotateDir=`pwd`
 software=`pwd`/software
 PATH="${PATH}:${HOME}/.local/bin"
 
@@ -26,31 +27,31 @@ if [ ! `which transeq` ] ; then
   make
   cp -R emboss/ "$software"/
   ln -s "$software"/emboss/transeq ~/.local/bin/transeq
-  cd ..
-  cd ..
+  cd $metAnnotateDir
 fi
 
 echo "Installing python packages through pip.\n"
-~/.local/bin/pip install --user numpy --ignore-installed
-~/.local/bin/pip install --user celery --ignore-installed
-~/.local/bin/pip install --user taxtastic --ignore-installed
-~/.local/bin/pip install --user lxml --ignore-installed
-~/.local/bin/pip install --user python-gflags --ignore-installed
-~/.local/bin/pip install --user ete2 --ignore-installed
+sudo ~/.local/bin/pip install --user numpy --ignore-installed
+sudo ~/.local/bin/pip install --user celery --ignore-installed
+sudo ~/.local/bin/pip install --user taxtastic --ignore-installed
+sudo ~/.local/bin/pip install --user lxml --ignore-installed
+sudo ~/.local/bin/pip install --user python-gflags --ignore-installed
+sudo ~/.local/bin/pip install --user ete2 --ignore-installed
 
 echo "Installing KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
   cd included_software/KronaTools-2.5/
+  chmod a+x install.pl
   ./install.pl --prefix "${HOME}/.local/"
-  cd ..
-  cd ..
+  chmod a+x scripts/*.pl
+  cd $metAnnotateDir
 fi
 
 echo "Installing HMMER & Easel mini-applications.\n"
 if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   cd downloads
-  wget "ftp://selab.janelia.org/pub/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-x86_64.tar.gz"
-  tar -xzf hmmer-3.1b1-linux-intel-x86_64.tar.gz
+  wget "http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz" #updated address here
+  tar -xzf hmmer-3.1b2-linux-intel-x86_64.tar.gz
   cd hmmer*
   ./configure
   make
@@ -60,13 +61,14 @@ if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   ln -s "$software"/hmmer/binaries/hmmalign ~/.local/bin/hmmalign
   ln -s "$software"/hmmer/binaries/esl-reformat ~/.local/bin/esl-reformat
   ln -s "$software"/hmmer/binaries/esl-sfetch ~/.local/bin/esl-sfetch
-  cd ..
-  cd ..
+  cd $metAnnotateDir
 fi
 
 echo "Installing USEARCH.\n"
 if [ ! `which usearch` ] ; then
-  ln -s `pwd`"/included_software/usearch" ~/.local/bin/usearch
+  echo "Changing execution permission on usearch"
+  chmod a+x "${metAnnotateDir}/included_software/usearch"
+  ln -s "${metAnnotateDir}/included_software/usearch" ~/.local/bin/usearch
 fi
 
 echo "Installing FastTreeMP.\n"
@@ -75,19 +77,19 @@ if [ ! `which FastTreeMP` ] ; then
   wget "http://www.microbesonline.org/fasttree/FastTreeMP"
   mv FastTreeMP ~/.local/bin/
   chmod a+x ~/.local/bin/FastTreeMP
-  cd ..
+  cd $metAnnotateDir
 fi
 
 echo "Installing pplacer and guppy.\n"
 if [ ! `which guppy` ] ; then
   cd downloads
-  wget "http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz"
-  tar -xzf pplacer-v1.1-Linux.tar.gz 
-  cd pplacer*
-  mv pplacer ~/.local/bin/
-  mv guppy ~/.local/bin/
-  cd ..
-  cd ..
+  wget "https://github.com/matsen/pplacer/releases/download/v1.1.alpha18/pplacer-linux-v1.1.alpha18-2-gcb55169.zip"
+  if [ ! `which unzip` ]; then
+    sudo apt-get -y install unzip
+  fi
+  unzip pplacer*
+  cd pplacer* && mv * ~/.local/bin/
+  cd $metAnnotateDir
 fi
 
 echo "Downloading and indexing taxonomy info.\n"
@@ -97,7 +99,7 @@ if [ ! -e data/taxonomy.pickle ] ; then
   tar -zxf taxdump.tar.gz
   grep 'scientific name' names.dmp > trimmed.names.dmp
   python make_taxonomy_pickle.py
-  cd ..
+  cd $metAnnotateDir
 fi
 
 echo "Downloading and indexing gi number to taxid mappings.\n"
@@ -106,7 +108,7 @@ if [ ! -e data/gi_taxid_prot.dmp ] ; then
   wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz"
   gunzip gi_taxid_prot.dmp.gz
   mv gi_taxid_prot.dmp ../data/
-  cd ..
+  cd $metAnnotateDir
 fi
 
 rm -rf downloads

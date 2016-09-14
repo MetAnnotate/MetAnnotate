@@ -1234,6 +1234,9 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
       output['columns'][column_name]['rows'][0]['hmm_krona'] = (
         '%s?collapse=false' % krona_file_base)
 
+  if 'rows' not in output:
+    print >> sys.stderr, 'Since there is no hmm hit in ORF, we can\'t continue processing...'
+    sys.exit(1)
 
   _MakeCountsFiles(output, output_files)
 
