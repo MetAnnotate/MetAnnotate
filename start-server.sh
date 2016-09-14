@@ -26,7 +26,9 @@ if [ `whoami` == "root" ];then
 fi
 
 echo "starting server, killing previous one"
-kill `cat server.pid` # kill previous server
+if [ -r "server.pid" -a -s "server.pid" ];then 
+    kill `cat server.pid` # kill previous server
+fi
 nohup python app.wsgi local >out.txt 2>&1 &
 # saving app pid 
 echo `ps -ef | grep "python app.wsgi local" | head -1 | awk '{print $2}'` > server.pid

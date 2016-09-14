@@ -22,6 +22,7 @@ if [ ! -e "Refseq.fa" ] || [ ! -e "Refseq.fa.ssi" ]; then
     echo "downloading refseq db, will take a few hours"
     wget ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/complete.nonredundant_protein*.protein.faa.gz
     zcat *.faa.gz >Refseq.fa
+    rm *.faa.gz
     ~/.local/bin/esl-sfetch --index Refseq.fa
 fi
 
@@ -42,5 +43,4 @@ fi
 
 echo "=======Test passed====="
 
-bash start-server.sh
-
+echo "Please start server by running 'bash start-server.sh'"
