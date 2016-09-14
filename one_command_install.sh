@@ -22,6 +22,13 @@ if [ ! -e "Refseq.fa" ] || [ ! -e "Refseq.fa.ssi" ]; then
     echo "downloading refseq db, will take a few hours"
     wget ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/complete.nonredundant_protein*.protein.faa.gz
     zcat *.faa.gz >Refseq.fa
+    echo "preprocessing Refseq.fa, removing uncommon amino acids"
+    perl ../scripts/cleanDatabase.pl Refseq.fa > list_to_remove.txt
+    perl ../scripts/removeFromFasta.pl list_to_remove.txt Refseq.fa > Refseq.fixed.fa
+    rm list_to_remove.txt
+    rm Refseq.fa
+    mv Refseq.fixed.fa Refseq.fa
+    echo "preprocessing completes"
     rm *.faa.gz
     ~/.local/bin/esl-sfetch --index Refseq.fa
 fi

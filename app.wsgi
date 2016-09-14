@@ -42,6 +42,17 @@ host_name = socket.gethostname()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 logging.basicConfig(level=logging.DEBUG)
 
+# Add in required path for hmmstat etc.
+extra_path = ''
+try:
+  with open('path.txt') as f:
+    for l in f:
+      extra_path = l.strip()
+      break
+except:
+  pass
+os.environ["PATH"] += os.pathsep + extra_path
+
 # Allow large requests.
 BaseRequest.MAX_PARAMS = 10000
 BaseRequest.MEMFILE_MAX = 1024 * 1024
