@@ -1242,7 +1242,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
 
   # Zips all output files together.
   zipped_files_filename = MakeOutputFile(['all_files'], extension='.zip')
-  zipped_files = zipfile.ZipFile(zipped_files_filename, 'w')
+  zipped_files = zipfile.ZipFile(zipped_files_filename, 'w', allowZip64=True)
   output['all_files'] = os.path.basename(zipped_files_filename)
   for file_name in output_files:
     if os.path.exists(file_name):
