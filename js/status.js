@@ -166,14 +166,15 @@ function refresh() {
           }
           status_box.append('<br/>');
         }
-        status_box.append('<br/>');
-        if (current_stdout && current_stderr && current_pid) {
-          var view_output = $('<button type="button" class="btn btn-warning">'+
-                              'View STDOUT/STDERR</button>');
-          view_output.click(ViewOutput);
-          status_box.append(view_output);
-          status_box.append('<br/><br/>');
-        }
+        // Removing STDOUT/STDERR button, since no output is actually generated
+        // status_box.append('<br/>');
+        // if (current_stdout && current_stderr && current_pid) {
+        //   var view_output = $('<button type="button" class="btn btn-warning">'+
+        //                       'View STDOUT/STDERR</button>');
+        //   view_output.click(ViewOutput);
+        //   status_box.append(view_output);
+        //   status_box.append('<br/><br/>');
+        // }
       }
 
       if ('result' in data) {
