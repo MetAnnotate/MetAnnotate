@@ -8,11 +8,13 @@ import json
 import shutil
 import sqlite3
 import zipfile
+import hash
 
 CONCURRENCY = '2'
 CONCURRENCY_SPECIFIED = False
 OUTPUT_DIR = 'output'
 TMP_DIR = 'tmp'
+CACHE_DIR = 'cache'
 REFERENCE_DATABASE = 'data/Refseq.fa'
 
 extra_path = ''
@@ -105,6 +107,9 @@ def UpdateTreeWithPhyloConsistency(node, taxid_dictionary, ranks, parents):
   if node.is_root():
     _ChooseRepresentatives(node)
 
+# make temp file in TMP_DIR and push it to `all_temp` list, 
+# so that we can clean up temp files later
+# return the name of the temp file made
 def _MakeTemp(all_temp, make_directory=False, extension=''):
   if make_directory:
     temp_file = tempfile.mkdtemp(dir=TMP_DIR)
@@ -412,19 +417,55 @@ def UseReferenceHits(reference_msa, temp_files):
           out_file.write(l)
   return (filtered_refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary)
 
+def _ComputeHashName(hmm_evalue,filter_multi,hmm_file):
+  return md5hash(hmm_file) + hexhash((hmm_evalue,filter_multi))
+
+def _MakeInCache(file_name):
+  filePath = CACHE_DIR +'/' + file_name
+  open(filePath, 'a').close()
+  return filePath
+
+def _CheckCache(file_hash_name):
+  file_prefix = CACHE_DIR+'/'+file_hash_name
+  domtblout = file_prefix+'.domtblout'
+  converted_msa = file_prefix + '.converted.msa'
+  if not os.path.isfile(domtblout) or not os.path.isfile(converted_msa)
+      return None
+  return (domtblout,converted_msa)
+
+def ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,task,meta):
+  file_hash_name = _ComputeHashName(hmm_evalue,filter_multi,hmm_file)
+  cache = _CheckCache(file_hash_name)
+  domtblout = None
+  converted_refseq_msa_file = None
+  if cache: 
+    domtblout = cache[0]
+    converted_refseq_msa_file = cache[1]
+    task.update_state(meta) # updating job status
+  else:
+    refseq_msa_file = _MakeTemp(temp_files)
+    domtblout = _MakeInCache(file_hash_name+'.domtblout')
+    converted_refseq_msa_file = _MakeInCache(file_hash_name,'.converted.msa')
+    run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
+                 '-E' if filter_multi else '--domE', str(hmm_evalue),
+                 '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
+                 REFERENCE_DATABASE], task=task, meta=meta)
+      # Stop prematurealy if no refseq hits.
+    if os.stat(refseq_msa_file).st_size != 0:
+      run_process(['esl-reformat', '-o', converted_refseq_msa_file, 'fasta',
+                   refseq_msa_file])
+    # the cached converted_refseq_msa_file should be empty at this point
+  # no refseq hits, return none
+  if os.stat(converted_refseq_msa_file).st_size == 0:
+    return None
+  return (domtblout,converted_refseq_msa_file)
+
 def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
-  refseq_msa_file = _MakeTemp(temp_files)
-  domtblout = _MakeTemp(temp_files)
-  converted_refseq_msa_file = _MakeTemp(temp_files)
-  run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
-               '-E' if filter_multi else '--domE', str(hmm_evalue),
-               '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
-               REFERENCE_DATABASE], task=task, meta=meta)
-  # Stop prematurealy if no refseq hits.
-  if os.stat(refseq_msa_file).st_size == 0:
-    return (None, set(), {})
-  run_process(['esl-reformat', '-o', converted_refseq_msa_file, 'fasta',
-               refseq_msa_file])
+  dom_and_msa = ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,task,meta)
+  if not dom_and_msa: # no refseq hits
+    return (None, set(), {}) # stop 
+  domtblout = dom_and_msa[0]
+  converted_refseq_msa_file = dom_and_msa[1]
   significant = set()
   sequences_hit = {}
   # Parses the domtblout output to find sequences that made the independent

@@ -111,6 +111,16 @@ if [ ! -e data/gi_taxid_prot.dmp ] ; then
   cd $metAnnotateDir
 fi
 
+echo "Installing cronjob to clean cache"
+crontab -l > mycron # saving current cronjob
+#echo new cron into cron file
+# cleaning cache every monday at 5am
+echo "# added by metannotate" >> mycron
+echo "00 05 * * 1 cd ${metAnnotateDir} && bash clean_cache.sh" >> mycron
+#install new cron file
+crontab mycron
+rm mycron
+
 rm -rf downloads
 rm -f precompute/gc.prt
 rm -f precompute/readme.txt
