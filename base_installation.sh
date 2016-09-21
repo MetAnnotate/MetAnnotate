@@ -8,7 +8,7 @@ PATH="${PATH}:${HOME}/.local/bin"
 
 mkdir -p downloads
 mkdir -p software
-
+mkdir -p cache
 echo "Installing pip.\n"
 if [ ! `which pip` ] ; then
   cd downloads

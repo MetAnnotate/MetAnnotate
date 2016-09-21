@@ -15,9 +15,10 @@ def md5hash(file,buf_size=65536):
             md5.update(data)
     return md5.hexdigest()
 
-# given a tuple, hash to hexadecimal string
-def hexhash(tup):
-    s = str(hex(hash(tup)))
+# given a hashable object, hash to hexadecimal string
+def hexhash(obj):
+    s = str(hex(hash(obj)))
     return s.split('x')[1]
+
 
 

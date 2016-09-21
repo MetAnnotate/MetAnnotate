@@ -418,34 +418,40 @@ def UseReferenceHits(reference_msa, temp_files):
   return (filtered_refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary)
 
 def _ComputeHashName(hmm_evalue,filter_multi,hmm_file):
-  return md5hash(hmm_file) + hexhash((hmm_evalue,filter_multi))
+  return hash.md5hash(hmm_file) + hash.hexhash((hmm_evalue,filter_multi))
+
+def _prependCachePrefix(file_name):
+  return CACHE_DIR+'/'+file_name
 
 def _MakeInCache(file_name):
-  filePath = CACHE_DIR +'/' + file_name
+  filePath = _prependCachePrefix(file_name)
   open(filePath, 'a').close()
   return filePath
 
-def _CheckCache(file_hash_name):
-  file_prefix = CACHE_DIR+'/'+file_hash_name
-  domtblout = file_prefix+'.domtblout'
-  converted_msa = file_prefix + '.converted.msa'
-  if not os.path.isfile(domtblout) or not os.path.isfile(converted_msa)
+# check if files with file_hash_name+extension exists
+# extensions is provided as a list
+def _CheckCache(file_hash_name,extensions):
+  file_prefix = _prependCachePrefix(file_hash_name)
+  file_paths = [n+ext for ext in extensions]
+  for f in file_paths:
+    if not os.path.isfile(f):
       return None
-  return (domtblout,converted_msa)
+  return file_paths
 
-def ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,task,meta):
+def ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,temp_files,task,meta):
   file_hash_name = _ComputeHashName(hmm_evalue,filter_multi,hmm_file)
-  cache = _CheckCache(file_hash_name)
+  cache = _CheckCache(file_hash_name,['.domtblout','.converted.msa'])
   domtblout = None
   converted_refseq_msa_file = None
   if cache: 
     domtblout = cache[0]
     converted_refseq_msa_file = cache[1]
-    task.update_state(meta) # updating job status
+    if(task and meta): 
+      task.update_state(meta) # updating job status
   else:
     refseq_msa_file = _MakeTemp(temp_files)
     domtblout = _MakeInCache(file_hash_name+'.domtblout')
-    converted_refseq_msa_file = _MakeInCache(file_hash_name,'.converted.msa')
+    converted_refseq_msa_file = _MakeInCache(file_hash_name+'.converted.msa')
     run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
                  '-E' if filter_multi else '--domE', str(hmm_evalue),
                  '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
@@ -461,7 +467,7 @@ def ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,task,meta):
   return (domtblout,converted_refseq_msa_file)
 
 def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
-  dom_and_msa = ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,task,meta)
+  dom_and_msa = ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,temp_files,task,meta)
   if not dom_and_msa: # no refseq hits
     return (None, set(), {}) # stop 
   domtblout = dom_and_msa[0]
@@ -649,6 +655,24 @@ def _MakeCountsFiles(output, output_files):
         raw_counts.writerow([row_name] + counts)
         normalized_counts.writerow([row_name] + normalized)
 
+def MakeFullRefSeqIdsFile(temp_files,refseq_hit_ids):
+  refseq_hits_hash = hash.hexhash(refseq_hit_ids)
+  ext = '.fullrefseq.ids'
+  cache = _CheckCache(refseq_hits_hash,[ext])
+  if cache: 
+    return cache[0]
+  refseq_ids_file = _MakeTemp(temp_files)
+  already_added = set()
+  with open(refseq_ids_file, 'w') as output_file:
+    for refseq_hit_id in refseq_hit_ids:
+      refseq_hit_id = refseq_hit_id[:refseq_hit_id.rindex('/')]
+      if refseq_hit_id not in already_added:
+        output_file.write('%s\n' % refseq_hit_id)
+        already_added.add(refseq_hit_id)
+  full_refseqs_file = _MakeInCache(refseq_hits_hash+ext)
+  run_process(['esl-sfetch', '-o', full_refseqs_file, '-f',
+               REFERENCE_DATABASE, refseq_ids_file])
+  return full_refseqs_file
 @app.task(bind=True)
 def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                 usearch_percent_id, do_sequence_classification,
@@ -818,19 +842,9 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
     combined_seqs_file = _MakeTemp(temp_files)
     run_process(['cat', refseq_seqs_file, combined_orfs_file],
                 stdout_file=combined_seqs_file)
+    immutable_refseq_hit_ids = frozenset(refseq_hit_ids)
+    refseq_ids_file = MakeFullRefSeqIdsFile(temp_files,immutable_refseq_hit_ids)
 
-    refseq_ids_file = _MakeTemp(temp_files)
-    already_added = set()
-    with open(refseq_ids_file, 'w') as output_file:
-      for refseq_hit_id in refseq_hit_ids:
-        refseq_hit_id = refseq_hit_id[:refseq_hit_id.rindex('/')]
-        if refseq_hit_id not in already_added:
-          output_file.write('%s\n' % refseq_hit_id)
-          already_added.add(refseq_hit_id)
-
-    full_refseqs_file = _MakeTemp(temp_files)
-    run_process(['esl-sfetch', '-o', full_refseqs_file, '-f',
-                 REFERENCE_DATABASE, refseq_ids_file])
 
     fixed_refseqs_file_full = _MakeTemp(temp_files)
     with open(full_refseqs_file) as input_file:
