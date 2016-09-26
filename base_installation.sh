@@ -8,7 +8,7 @@ PATH="${PATH}:${HOME}/.local/bin"
 
 mkdir -p downloads
 mkdir -p software
-
+mkdir -p cache
 echo "Installing pip.\n"
 if [ ! `which pip` ] ; then
   cd downloads
@@ -110,6 +110,16 @@ if [ ! -e data/gi_taxid_prot.dmp ] ; then
   mv gi_taxid_prot.dmp ../data/
   cd $metAnnotateDir
 fi
+
+echo "Installing cronjob to clean cache"
+crontab -l > mycron # saving current cronjob
+#echo new cron into cron file
+# cleaning cache every monday at 5am
+echo "# added by metannotate" >> mycron
+echo "00 05 * * 1 cd ${metAnnotateDir} && bash clean_cache.sh" >> mycron
+#install new cron file
+crontab mycron
+rm mycron
 
 rm -rf downloads
 rm -f precompute/gc.prt
