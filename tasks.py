@@ -432,7 +432,7 @@ def _MakeInCache(file_name):
 # extensions is provided as a list
 def _CheckCache(file_hash_name,extensions):
   file_prefix = _prependCachePrefix(file_hash_name)
-  file_paths = [n+ext for ext in extensions]
+  file_paths = [file_prefix+ext for ext in extensions]
   for f in file_paths:
     if not os.path.isfile(f):
       return None
@@ -843,7 +843,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
     run_process(['cat', refseq_seqs_file, combined_orfs_file],
                 stdout_file=combined_seqs_file)
     immutable_refseq_hit_ids = frozenset(refseq_hit_ids)
-    refseq_ids_file = MakeFullRefSeqIdsFile(temp_files,immutable_refseq_hit_ids)
+    full_refseqs_file = MakeFullRefSeqIdsFile(temp_files,immutable_refseq_hit_ids)
 
 
     fixed_refseqs_file_full = _MakeTemp(temp_files)
