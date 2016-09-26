@@ -2,13 +2,27 @@ Table of Contents
 =========================
 
 **[Support and Requirements](#markdown-header-support-and-requirements)**  
-**[Installing Base/Command Line Version](#markdown-header-base-installation)**  
+**[Installing Base/Command Line Version](#markdown-header-base-installation)** 
 **[Concurrency](#markdown-header-concurrency)**  
 **[Built-in Webserver](#markdown-header-built-in-webserver)**  
+**[A Note on Cache](#markdown-header-a-note-on-cache)**  
+**[Known Issues](#markdown-header-known-issues)**  
 **[Configure With Apache and Celeryd](#markdown-header-configure-with-apache-and-celeryd)**  
 
 Installation Instructions
 =========================
+
+Packaged Installation (Simpler)
+---
+This is a simpler to install with [Docker](https://www.docker.com/) packaging (similar to running in virtual box). However, you won't be able to (or it is inconvenient to) use the command line version of MetAnntoate. 
+
+It works on a Mac and on Linux, however, be sure that your laptop meets required RAM and space requirement. 
+
+*Follow instructions here* https://bitbucket.org/doxeylab/metannotateinstaller
+
+The rest of the README is for Ubuntu 14.04+ users with fair technical knowledge. It is _required_ if you want to use the command line version of MetAnnotate. 
+
+
 
 Support and Requirements
 ------------------------
@@ -96,6 +110,22 @@ To stop server:
 Output of server is at `out.txt` for debugging purposes.
 
 Occasionally (when no job is running), you can run `rm tmp/*` to free up disk space. 
+
+
+
+A Note on Cache
+----
+
+MetAnnotate has a cache layer that is cleaned every week. You can modify your Cronjob by typing `crontab -e` to edit the clean up interval. 
+
+Repeating the same HMM files is much faster with cache (95% speed up). 
+
+Known Issues
+----
+
+If an ORF file has no HMM hit, the script will terminate and job will error out.
+
+
 
 Configure with Apache and Celeryd (More technical)
 ---------------------------------
