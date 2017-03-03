@@ -13,6 +13,7 @@ echo "Installing pip.\n"
 if [ ! `which pip` ] ; then
   cd downloads
   wget "https://bootstrap.pypa.io/get-pip.py"
+  # install pip locally
   python get-pip.py --user --ignore-installed
   cd ..
 fi
@@ -31,12 +32,16 @@ if [ ! `which transeq` ] ; then
 fi
 
 echo "Installing python packages through pip.\n"
-sudo ~/.local/bin/pip install --user numpy --ignore-installed
-sudo ~/.local/bin/pip install --user celery --ignore-installed
-sudo ~/.local/bin/pip install --user taxtastic --ignore-installed
-sudo ~/.local/bin/pip install --user lxml --ignore-installed
-sudo ~/.local/bin/pip install --user python-gflags --ignore-installed
-sudo ~/.local/bin/pip install --user ete2 --ignore-installed
+pip=`which pip`
+if [ -e ~/.local/bin/pip ] ; then
+  pip=~/.local/bin/pip
+fi
+sudo $pip install --user numpy --ignore-installed
+sudo $pip install --user celery --ignore-installed
+sudo $pip install --user taxtastic --ignore-installed
+sudo $pip install --user lxml --ignore-installed
+sudo $pip install --user python-gflags --ignore-installed
+sudo $pip install --user ete2 --ignore-installed
 
 echo "Installing KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
