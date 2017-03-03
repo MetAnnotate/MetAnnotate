@@ -52,6 +52,7 @@ For Ubuntu:14.04:
 
 Step 1: 
 ```bash
+#cd to home directory
 sudo apt-get update
 if [ ! `which git` ]; then
   sudo apt-get install -y git
