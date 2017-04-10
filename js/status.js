@@ -81,7 +81,7 @@ function refresh() {
     if (!jQuery.isEmptyObject(data)) {
       if ('no_exist' in data) {
         if (no_exist_count >= 1) {
-          $('#status').empty().append('Job does not exists.');
+          $('#status').empty().append('Job does not exist.');
           clearInterval(interval);
         } else {
           no_exist_count += 1;
