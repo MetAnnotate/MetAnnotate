@@ -11,7 +11,7 @@ if [ ! `which rabbitmq-server` ];then
 fi
 
 echo "Checking rabbitmq-server status"
-sudo rabbitmqctl status 
+sudo rabbitmqctl status &> /dev/null #don't want to confuse user with error message
 rabbitStatus=$?
 
 if [ $rabbitStatus -ne 0 ]; then
