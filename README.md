@@ -2,95 +2,133 @@ Table of Contents
 =========================
 
 **[Support and Requirements](#markdown-header-support-and-requirements)**  
-**[metAnnotate Modes](#markdown-header-modes)**  
-**[Installing Base/Command Line Version](#markdown-header-base-installation)**  
+**[Installing Base/Command Line Version](#markdown-header-base-installation)** 
+**[Concurrency](#markdown-header-concurrency)**  
 **[Built-in Webserver](#markdown-header-built-in-webserver)**  
+**[A Note on Cache](#markdown-header-a-note-on-cache)**  
+**[Known Issues](#markdown-header-known-issues)**  
 **[Configure With Apache and Celeryd](#markdown-header-configure-with-apache-and-celeryd)**  
 
 Installation Instructions
 =========================
 
+Packaged Installation (Simpler)
+---
+This is a simpler to install with [Docker](https://www.docker.com/) packaging (similar to running in virtual box). However, you won't be able to (or it is inconvenient to) use the command line version of MetAnntoate. 
+
+It works on a Mac and on Linux, however, be sure that your laptop meets required RAM and space requirement. 
+
+*Follow instructions here* https://bitbucket.org/doxeylab/metannotateinstaller
+
+The rest of the README is for Ubuntu 14.04+ users with fair technical knowledge. It is _required_ if you want to use the command line version of MetAnnotate. 
+
+
+
 Support and Requirements
 ------------------------
-Debian/Ubuntu.
+Debian/Ubuntu, with at least 6GB of space + the space required to store the Refseq database.
 
-The following packages should already be installed on your system:
+The following packages are required. Note that in [One Command Install](#markdown-header-one-command-install), the dependencies are _automatically_installed
 
- * python-dev
+ * python-dev (version 2.7)
  * build-essential
  * default-jre
  * git
+ * wget
+ * python-mysqldb 
+ * rabbitmq-server 
+ * libssl-dev 
+ * libffi-dev 
+ * sqlite3
 
-Modes
------
 
-metAnnotate can be run in different ways. The simplest way to run metAnnotate is
-via command line, which produces a number or output tables and html krona
-charts. However, metAnnotate can be run as a webserver to provide a rich UI that
-can be used to analyze all results. Currently, users must have sudo permissions
-to install the additional requirements necessary to run the server. We hope to
-remove this requirement in the future. The web server can be run as a standalone
-web server, or can be integrated with apache so that it runs on startup all the
-time. See the installation instructions for all three modes below.
 
-Base Installation
------------------
-To install:
+One Command Install (install all dependencies, command-line and webserver)
+----
 
-    git clone https://bitbucket.org/doxeylab/metannotate.git
-    cd metannotate
-    bash base_installation.sh
+For Ubuntu:14.04: 
 
-Note that you will also need to setup the Refseq.fa and Refseq.fa.ssi file in
-the metannotate/data/ directory. To build Refseq.fa, desired files can be
-downloaded from <ftp://ftp.ncbi.nlm.nih.gov/refseq/release/> and concatenated.
-This fasta file can be generated from local NCBI blastdb files.
-To create the ssi index, simply run:
+*NOTE* machine root password is required and will be asked for
 
-    esl-sfetch --index Refseq.fa
+Step 1: 
+```bash
+#cd to home directory
+sudo apt-get update
+if [ ! `which git` ]; then
+  sudo apt-get install -y git
+fi
+git clone --depth=1 https://bitbucket.org/doxeylab/metannotate.git
+cd metannotate
+bash one_command_install.sh
+# enter password as required
+```
 
-Alternatively, you can download a 2014 refseq file and index like this:
-
-    wget http://scopepc.uwaterloo.ca/Refseq.fa # 9.1 GB
-    wget http://scopepc.uwaterloo.ca/Refseq.fa.ssi # 1.3 GB
 
 Sample run:
+---
 
-    python run_metannotate.py --orf_files=../sample_metagenomes/4478943.3.transeq.fa --hmm_files=data/hmms/TIGR00665.HMM --output_dir=my_output --tmp_dir=my_tmp
+    python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
-More options:
+Note that in the example above, a [tiny] test reference database was specified to make process faster. If not specified, the default data/Refseq.fa database is used. You should now see run outputs in `test_output` directory. 
+
+
+For more options:
 
     python run_metannotate.py --help
 
+Concurrency
+-----------
+You can speed up metannotate by specifying a greater concurrency in metannotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
+
 Built-in Webserver
 ------------------
-To install, first follow the base installation instructions above, and then run
-the following script in the metannotate directory:
+The web server is installed as part of *One Command Install*
 
-    sudo bash full_installation.sh
-
-To finish the installation, you will still need to configure the metagenome
-directory files. You need to create 2 files:
+There are two files that provide additional configuration:
 
  * metagenome\_directories\_root.txt
  * metagenome\_directories.txt
  
-See metagenome\_directories\_sample.txt and
-metagenome\_directories\_root\_sample.txt for reference. These files need to be
-placed in the main metannotate direcoty (current directory).
+These files are already placed in the main metannotate directory.
+
 metagenome\_directories\_root.txt contains the root path for all metagenome
 directories that will be read by the program. metagenome\_directories.txt lists
 all the directories in that root directory that should be read as metagenome
 directories (in the case that you have other directories in the root directory
 that shouldn't be interpreted as metagenome directories).
 
-To run:
+To start server:
 
-    python app.wsgi local >out.txt 2>&1 &  
+    bash start-server.sh 
+    # enter password as prompted
 
-The output will contain both web server and celery output.
+To stop server: 
 
-Configure with Apache and Celeryd
+    bash stop.sh
+    # enter password as prompted
+
+
+Output of server is at `out.txt` for debugging purposes.
+
+Occasionally (when no job is running), you can run `rm tmp/*` to free up disk space. 
+
+
+
+A Note on Cache
+----
+
+MetAnnotate has a cache layer that is cleaned every week. You can modify your Cronjob by typing `crontab -e` to edit the clean up interval. 
+
+Repeating the same HMM files is much faster with cache (95% speed up). 
+
+Known Issues
+----
+
+If an ORF file has no HMM hit, the script will terminate and job will error out.
+
+
+
+Configure with Apache and Celeryd (More technical)
 ---------------------------------
 
 Configuring the app to run with an Apache server and an existing celery daemon

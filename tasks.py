@@ -8,7 +8,14 @@ import json
 import shutil
 import sqlite3
 import zipfile
+import hash
+
 CONCURRENCY = '2'
+CONCURRENCY_SPECIFIED = False
+OUTPUT_DIR = 'output'
+TMP_DIR = 'tmp'
+CACHE_DIR = 'cache'
+REFERENCE_DATABASE = 'data/Refseq.fa'
 
 extra_path = ''
 try:
@@ -22,8 +29,8 @@ os.environ["PATH"] += os.pathsep + extra_path
 
 def run_process(args, stdout_file=None, meta=None, task=None):
   stdout_handle = (open(stdout_file, 'w') if stdout_file else
-                   tempfile.NamedTemporaryFile(dir='tmp'))
-  stderr_handle = tempfile.NamedTemporaryFile(dir='tmp')
+                   tempfile.NamedTemporaryFile(dir=TMP_DIR))
+  stderr_handle = tempfile.NamedTemporaryFile(dir=TMP_DIR)
   with stdout_handle as stdout, stderr_handle as stderr:
     the_process = subprocess.Popen(args, stdout=stdout, stderr=stderr)
     if meta and task:
@@ -33,6 +40,8 @@ def run_process(args, stdout_file=None, meta=None, task=None):
       os.chmod(stdout.name, 0774)
       os.chmod(stderr.name, 0774)
       task.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running commands: %s' % ' '.join(args)
     return_code = the_process.wait()
     if meta and task:
       del meta['pid']
@@ -98,11 +107,14 @@ def UpdateTreeWithPhyloConsistency(node, taxid_dictionary, ranks, parents):
   if node.is_root():
     _ChooseRepresentatives(node)
 
+# make temp file in TMP_DIR and push it to `all_temp` list, 
+# so that we can clean up temp files later
+# return the name of the temp file made
 def _MakeTemp(all_temp, make_directory=False, extension=''):
   if make_directory:
-    temp_file = tempfile.mkdtemp(dir='tmp')
+    temp_file = tempfile.mkdtemp(dir=TMP_DIR)
   else:
-    fd, temp_file = tempfile.mkstemp(dir='tmp', suffix=extension)
+    fd, temp_file = tempfile.mkstemp(dir=TMP_DIR, suffix=extension)
     os.close(fd)
   all_temp.append(temp_file)
   return temp_file
@@ -154,7 +166,8 @@ def _CreateMergedKronaAndAssignLinks(dataset_type, krona_name, dataset_names,
                                      main_name, counts, elements, main_element,
                                      temp_files, output_files):
   krona_file = MakeOutputFile([krona_name, 'krona'],
-                               all_output_files=output_files)
+                               all_output_files=output_files,
+                              extension='.html')
   krona_file_base = os.path.basename(krona_file)
   combined_clade_counts = _MakeTemp(temp_files)
   run_process(['cat'] + [count for count in counts if count],
@@ -285,7 +298,8 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
 
     # Retrieves sequences for matching hits. Avoid SeqIO for speed.
     seqs_file = MakeOutputFile([hmm_family_safe, orfs_name_safe, 'reads'],
-                               all_output_files=output_files)
+                               all_output_files=output_files,
+                               extension='.fa')
     seen = set()
     with open(orf_file) as input_handle:
       with open(seqs_file, 'w') as output_handle:
@@ -403,19 +417,61 @@ def UseReferenceHits(reference_msa, temp_files):
           out_file.write(l)
   return (filtered_refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary)
 
+def _ComputeHashName(hmm_evalue,filter_multi,hmm_file):
+  return hash.md5hash(hmm_file) + hash.hexhash((hmm_evalue,filter_multi))
+
+def _prependCachePrefix(file_name):
+  return CACHE_DIR+'/'+file_name
+
+def _MakeInCache(file_name):
+  filePath = _prependCachePrefix(file_name)
+  open(filePath, 'a').close()
+  return filePath
+
+# check if files with file_hash_name+extension exists
+# extensions is provided as a list
+def _CheckCache(file_hash_name,extensions):
+  file_prefix = _prependCachePrefix(file_hash_name)
+  file_paths = [file_prefix+ext for ext in extensions]
+  for f in file_paths:
+    if not os.path.isfile(f):
+      return None
+  return file_paths
+
+def ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,temp_files,task,meta):
+  file_hash_name = _ComputeHashName(hmm_evalue,filter_multi,hmm_file)
+  cache = _CheckCache(file_hash_name,['.domtblout','.converted.msa'])
+  domtblout = None
+  converted_refseq_msa_file = None
+  if cache: 
+    domtblout = cache[0]
+    converted_refseq_msa_file = cache[1]
+    if(task and meta): 
+      task.update_state(meta) # updating job status
+  else:
+    refseq_msa_file = _MakeTemp(temp_files)
+    domtblout = _MakeInCache(file_hash_name+'.domtblout')
+    converted_refseq_msa_file = _MakeInCache(file_hash_name+'.converted.msa')
+    run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
+                 '-E' if filter_multi else '--domE', str(hmm_evalue),
+                 '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
+                 REFERENCE_DATABASE], task=task, meta=meta)
+      # Stop prematurealy if no refseq hits.
+    if os.stat(refseq_msa_file).st_size != 0:
+      run_process(['esl-reformat', '-o', converted_refseq_msa_file, 'fasta',
+                   refseq_msa_file])
+    # the cached converted_refseq_msa_file should be empty at this point
+  # no refseq hits, return none
+  if os.stat(converted_refseq_msa_file).st_size == 0:
+    return None
+  return (domtblout,converted_refseq_msa_file)
+
 def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
-  refseq_msa_file = _MakeTemp(temp_files)
-  domtblout = _MakeTemp(temp_files)
-  converted_refseq_msa_file = _MakeTemp(temp_files)
-  run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
-               '-E' if filter_multi else '--domE', str(hmm_evalue),
-               '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
-               'data/Refseq.fa'], task=task, meta=meta)
-  # Stop prematurealy if no refseq hits.
-  if os.stat(refseq_msa_file).st_size == 0:
-    return (None, set(), {})
-  run_process(['esl-reformat', '-o', converted_refseq_msa_file, 'fasta',
-               refseq_msa_file])
+  dom_and_msa = ComputeDomainAndMsa(hmm_evalue,filter_multi,hmm_file,temp_files,task,meta)
+  if not dom_and_msa: # no refseq hits
+    return (None, set(), {}) # stop 
+  domtblout = dom_and_msa[0]
+  converted_refseq_msa_file = dom_and_msa[1]
   significant = set()
   sequences_hit = {}
   # Parses the domtblout output to find sequences that made the independent
@@ -504,7 +560,7 @@ def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
 
 def MakeOutputFile(parts, extension='', all_output_files=[]):
   fd, output_file = tempfile.mkstemp(
-      dir='output',
+      dir=OUTPUT_DIR,
       prefix = '%s_' % '_'.join(parts),
       suffix='%s%s' % (str(int(random.random()*1000000000)), extension))
   os.close(fd)
@@ -526,10 +582,10 @@ def CleanUp():
         pass
 
   allowed_output_time = time.time() - MAX_OUTPUT_HOURS * 3600
-  for f in os.listdir('output'):
+  for f in os.listdir(OUTPUT_DIR):
     if f.startswith('_sample_'):
       continue
-    full = os.path.join('output', f)
+    full = os.path.join(OUTPUT_DIR, f)
     if not f.startswith('.') and os.path.getmtime(full) <= allowed_output_time:
       try:
         os.remove(full)
@@ -547,7 +603,7 @@ def _CombineAnnotationFiles(annotation_files, output_file):
   with open(output_file, 'w') as f:
     first_file = True
     for annotations_file in annotation_files:
-      with open(os.path.join('output', annotations_file)) as input_handle:
+      with open(os.path.join(OUTPUT_DIR, annotations_file)) as input_handle:
         first_line = True
         for l in input_handle:
           if first_line and not first_file:
@@ -561,7 +617,7 @@ def _CombineReadFiles(read_files, output_file):
   seen = set()
   with open(output_file, 'w') as f:
     for reads_file in read_files:
-      with open(os.path.join('output', reads_file)) as input_handle:
+      with open(os.path.join(OUTPUT_DIR, reads_file)) as input_handle:
         ignore = False
         for l in input_handle:
           if l.startswith('>'):
@@ -599,18 +655,52 @@ def _MakeCountsFiles(output, output_files):
         raw_counts.writerow([row_name] + counts)
         normalized_counts.writerow([row_name] + normalized)
 
+def MakeFullRefSeqIdsFile(temp_files,refseq_hit_ids):
+  refseq_hits_hash = hash.hexhash(refseq_hit_ids)
+  ext = '.fullrefseq.ids'
+  cache = _CheckCache(refseq_hits_hash,[ext])
+  if cache: 
+    return cache[0]
+  refseq_ids_file = _MakeTemp(temp_files)
+  already_added = set()
+  with open(refseq_ids_file, 'w') as output_file:
+    for refseq_hit_id in refseq_hit_ids:
+      refseq_hit_id = refseq_hit_id[:refseq_hit_id.rindex('/')]
+      if refseq_hit_id not in already_added:
+        output_file.write('%s\n' % refseq_hit_id)
+        already_added.add(refseq_hit_id)
+  full_refseqs_file = _MakeInCache(refseq_hits_hash+ext)
+  run_process(['esl-sfetch', '-o', full_refseqs_file, '-f',
+               REFERENCE_DATABASE, refseq_ids_file])
+  return full_refseqs_file
 @app.task(bind=True)
 def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                 usearch_percent_id, do_sequence_classification,
                 do_phylogenetic_classification, force_msa, filter_multi_orf,
                 filter_multi_refseq, transeq, min_coverage, min_alignment,
                 reference_msa, reference_tree, reference_log):
+  return RunPipelineReal(
+      self, RunPipeline.request.id, orf_files, hmm_files,
+      hmm_evalue, refseq_hmm_evalue, usearch_percent_id,
+      do_sequence_classification, do_phylogenetic_classification,
+      force_msa, filter_multi_orf, filter_multi_refseq, transeq,
+      min_coverage, min_alignment, reference_msa, reference_tree,
+      reference_log)
+
+def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
+                    refseq_hmm_evalue, usearch_percent_id,
+                    do_sequence_classification, do_phylogenetic_classification,
+                    force_msa, filter_multi_orf, filter_multi_refseq, transeq,
+                    min_coverage, min_alignment, reference_msa, reference_tree,
+                    reference_log):
   global CONCURRENCY
-  with open('concurrency.txt') as f:
-    for l in f:
-      CONCURRENCY = l.strip()
-      break
-  CleanUp()
+  if not CONCURRENCY_SPECIFIED:
+    with open('concurrency.txt') as f:
+      for l in f:
+        CONCURRENCY = l.strip()
+        break
+  if instance:
+    CleanUp()
   # Strange bug: Server hand if this import is at the top of the file. There is
   # likely a cyclic reference problem that is hard to reproduce.
   import ete2
@@ -669,7 +759,10 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
   # Transeq DNA to protein.
   if transeq:
     meta['states']['TRANSEQ'] = True
-    self.update_state(meta=meta)
+    if instance:
+      instance.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running Transeq.'
     new_orf_files = []
     for orfs_name, orfs_path in orf_files:
       new_orfs_path = _MakeTemp(temp_files)
@@ -698,11 +791,18 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
     # Runs hmmsearch on orf files.
     meta['states']['HMMSEARCH1'] = True
-    self.update_state(meta=meta)
+    if instance:
+      instance.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running hmmsearch on provided sequences.'
     (read_files,hmm_hit_files, safe_orf_names, hmm_hit_evalues) = FindOrfHits(
        orf_files, hmm_evalue, min_alignment, filter_multi_orf, hmm_file,
-       hmm_family_safe, temp_files, column, self, meta, output_files)
+       hmm_family_safe, temp_files, column, instance, meta, output_files)
     meta['total_orfs'] = sum(len(evals) for evals in hmm_hit_evalues)
+    if meta['total_orfs'] == 0:
+      if not instance:
+        print >> sys.stderr, 'No ORF hits to HMM.'
+      continue
 
     if 'rows' not in output:
       rows = []
@@ -721,9 +821,12 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
     else:
       # Runs hmmsearch on refseq.
       meta['states']['HMMSEARCH2'] = True
-      self.update_state(meta=meta)
+      if instance:
+        instance.update_state(meta=meta)
+      else:
+        print >> sys.stderr, 'Running hmmsearch on Reference database.'
       (refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary) = FindRefseqHits(
-        refseq_hmm_evalue, filter_multi_refseq, hmm_file, temp_files, self,
+        refseq_hmm_evalue, filter_multi_refseq, hmm_file, temp_files, instance,
         meta)
     column['total_reference_sequences'] = len(refseq_hit_ids)
     meta['total_refs'] = len(refseq_hit_ids)
@@ -739,19 +842,9 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
     combined_seqs_file = _MakeTemp(temp_files)
     run_process(['cat', refseq_seqs_file, combined_orfs_file],
                 stdout_file=combined_seqs_file)
+    immutable_refseq_hit_ids = frozenset(refseq_hit_ids)
+    full_refseqs_file = MakeFullRefSeqIdsFile(temp_files,immutable_refseq_hit_ids)
 
-    refseq_ids_file = _MakeTemp(temp_files)
-    already_added = set()
-    with open(refseq_ids_file, 'w') as output_file:
-      for refseq_hit_id in refseq_hit_ids:
-        refseq_hit_id = refseq_hit_id[:refseq_hit_id.rindex('/')]
-        if refseq_hit_id not in already_added:
-          output_file.write('%s\n' % refseq_hit_id)
-          already_added.add(refseq_hit_id)
-
-    full_refseqs_file = _MakeTemp(temp_files)
-    run_process(['esl-sfetch', '-o', full_refseqs_file, '-f',
-                 'data/Refseq.fa', refseq_ids_file])
 
     fixed_refseqs_file_full = _MakeTemp(temp_files)
     with open(full_refseqs_file) as input_file:
@@ -763,7 +856,10 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
     if do_sequence_classification:
       meta['states']['USEARCH'] = True
-      self.update_state(meta=meta)
+      if instance:
+        instance.update_state(meta=meta)
+      else:
+        print >> sys.stderr, 'Running USEARCH'
 
       # USEARCH for closest neighbours. 
       closest_neighbours = {}
@@ -771,7 +867,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         blast_output = _MakeTemp(temp_files)
         run_process(['usearch', '-usearch_global', combined_reads_file, '-db',
                      fixed_refseqs_file_full, '-id', str(usearch_percent_id),
-                     '-blast6out', blast_output], task=self, meta=meta)
+                     '-blast6out', blast_output], task=instance, meta=meta)
         with open(blast_output) as f:
           for l in f:
             parts = l.split('\t')
@@ -787,10 +883,13 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
     if do_phylogenetic_classification or force_msa:
       # Runs hmmalign on matching sequences.
       meta['states']['HMMALIGN'] = True
-      self.update_state(meta=meta)
+      if instance:
+        instance.update_state(meta=meta)
+      else:
+        print >> sys.stderr, 'Running hmmalign.'
       alignment_file = _MakeTemp(temp_files)
       run_process(['hmmalign', '-o', alignment_file, hmm_file,
-                   combined_seqs_file], task=self, meta=meta)
+                   combined_seqs_file], task=instance, meta=meta)
       # Converts to FASTA format.
       converted_alignment_file = _MakeTemp(temp_files)
       run_process(['esl-reformat', '-o', converted_alignment_file, 'afa',
@@ -844,11 +943,13 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         shutil.move(reference_msa, refseq_alignment_file)
         column['refseq_msa'] = os.path.basename(refseq_alignment_file)
         tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'],
-                                   all_output_files=output_files)
+                                   all_output_files=output_files,
+                                   extension='.newick')
         shutil.move(reference_tree, tree_file)
         column['refseq_tree'] = os.path.basename(tree_file)
         log_file = MakeOutputFile([hmm_family_safe, 'refseq', 'fastree',
-                                   'log'], all_output_files=output_files)
+                                   'log'], all_output_files=output_files,
+                                  extension='.txt')
         shutil.move(reference_log, log_file)
         column['refseq_log'] = os.path.basename(log_file)
       else:
@@ -869,20 +970,25 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
 
         # Runs FastTree given the alignment.
         meta['states']['FASTTREE'] = True
-        self.update_state(meta=meta)
+        if instance:
+          instance.update_state(meta=meta)
+        else:
+          print >> sys.stderr, 'Running FastTree.'
         os.environ['OMP_NUM_THREADS'] = CONCURRENCY
         tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'],
-                                   all_output_files=output_files)
+                                   all_output_files=output_files,
+                                   extension='.newick')
         column['refseq_tree'] = os.path.basename(tree_file)
         log_file = MakeOutputFile([hmm_family_safe, 'refseq', 'fastree',
-                                   'log'], all_output_files=output_files)
+                                   'log'], all_output_files=output_files,
+                                   extension='.txt')
         column['refseq_log'] = os.path.basename(log_file)
         args = ['FastTreeMP','-out', tree_file, '-log', log_file, '-mlnni',
                 '4']
         if total_refseqs >= 50000:
           args += ['-fastest']
         args += [refseq_alignment_file]
-        run_process(args, task=self, meta=meta)
+        run_process(args, task=instance, meta=meta)
 
       if meta['total_orfs'] > 0:
         # Create RefPackage for pplacer.
@@ -896,17 +1002,21 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         placements_file = _MakeTemp(temp_files, extension='.jplace')
         run_process(['pplacer', '-j', CONCURRENCY, '-c', package_loc, '-o',
                      placements_file, '--groups', '10', fixed_alignment_file],
-                     task=self, meta=meta)
+                     task=instance, meta=meta)
 
         # Run Guppy to add in the placements to the original tree.
         tree_file = MakeOutputFile([hmm_family_safe, 'tree'],
-                                   all_output_files=output_files)
+                                   all_output_files=output_files,
+                                   extension='.newick')
         column['tree'] = os.path.basename(tree_file)
         run_process(['guppy', 'tog', '-o', tree_file, placements_file],
-                    task=self, meta=meta)
+                    task=instance, meta=meta)
 
     meta['states']['TAXONOMY'] = True
-    self.update_state(meta=meta)
+    if instance:
+      instance.update_state(meta=meta)
+    else:
+      print >> sys.stderr, 'Running taxonomic classification.'
     # Loads precomputed taxonomy name and id mappings.
     with open('data/taxonomy.pickle') as f:
       taxonomy_data = pickle.load(f)
@@ -939,7 +1049,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         continue
       output_file = MakeOutputFile(
         [hmm_family_safe, orfs_name_safe, 'annotations'],
-        all_output_files=output_files)
+        all_output_files=output_files, extension='.tsv')
 
       cell['annotations'] = os.path.basename(output_file)
       global_annotation_files.append(cell['annotations'])
@@ -1026,7 +1136,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                                 name_dictionary))
         # Removes eliminated sequences from raw reads file.
         cell['sequences_hit'] = len(orfs_reported)
-        reads_file = os.path.join('output', cell['reads_file'])
+        reads_file = os.path.join(OUTPUT_DIR, cell['reads_file'])
         global_read_files.append(cell['reads_file'])
         old_reads_file = _MakeTemp(temp_files)
         shutil.move(reads_file, old_reads_file)
@@ -1085,7 +1195,8 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
     if len(annotation_files) > 1:
       combined_output_file = MakeOutputFile([hmm_family_safe,
                                              'all_annotations'],
-                                             all_output_files=output_files)
+                                             all_output_files=output_files,
+                                             extension='.tsv')
       _CombineAnnotationFiles(annotation_files, combined_output_file)
       column['all_annotations'] = os.path.basename(combined_output_file)
 
@@ -1094,7 +1205,8 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                   if 'reads_file' in cell]
     if len(read_files) > 1:
       combined_read_file = MakeOutputFile([hmm_family_safe, 'all_reads'],
-                                          all_output_files=output_files)
+                                          all_output_files=output_files,
+                                          extension='.fa')
       _CombineReadFiles(read_files, combined_read_file)
       column['all_reads'] = os.path.basename(combined_read_file)
 
@@ -1118,7 +1230,8 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
       if len(annotation_files) > 1:
         combined_output_file = MakeOutputFile([row['name'],
                                               'all_annotations'],
-                                              all_output_files=output_files)
+                                              all_output_files=output_files,
+                                              extension='.tsv')
         _CombineAnnotationFiles(annotation_files, combined_output_file)
         row['all_annotations'] = os.path.basename(combined_output_file)
       # Creates combined reads file for all HMMs for this dataset.
@@ -1128,7 +1241,8 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         if 'reads_file' in output['columns'][col]['rows'][row_index]]
       if len(read_files) > 1:
         combined_read_file = MakeOutputFile([row['name'], 'all_reads'],
-                                            all_output_files=output_files)
+                                            all_output_files=output_files,
+                                            extension='.fa')
         _CombineReadFiles(read_files, combined_read_file)
         row['all_reads'] = os.path.basename(combined_read_file)
 
@@ -1152,32 +1266,38 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
       # Creates combined annotations file for all HMMs for this dataset.
       if len(global_annotation_files) > 1:
         combined_output_file = MakeOutputFile(['all_annotations'],
-                                              all_output_files=output_files)
+                                              all_output_files=output_files,
+                                              extension='.tsv')
         _CombineAnnotationFiles(global_annotation_files, combined_output_file)
         output['all_annotations'] = os.path.basename(combined_output_file)
       # Creates combined reads file for all HMMs for this dataset.
       if len(global_read_files) > 1:
         combined_read_file = MakeOutputFile(['all_reads'],
-                                            all_output_files=output_files)
+                                            all_output_files=output_files,
+                                            extension='.fa')
         _CombineReadFiles(global_read_files, combined_read_file)
         output['all_reads'] = os.path.basename(combined_read_file)
   elif len(hmm_files) == 1 and len(orf_files) == 1:
     # Create single krona for single HMM + dataset analysis.
     column_name = output['column_order'][0]
     if lineage_files[column_name][0]:
-      krona_file = MakeOutputFile(['krona'], all_output_files=output_files)
+      krona_file = MakeOutputFile(
+          ['krona'], all_output_files=output_files, extension='.html')
       krona_file_base = os.path.basename(krona_file)
       count = lineage_files[column_name][0]
       _CreateMergedKronaFile([(column_name, count)], krona_file)
       output['columns'][column_name]['rows'][0]['hmm_krona'] = (
         '%s?collapse=false' % krona_file_base)
 
+  if 'rows' not in output:
+    print >> sys.stderr, 'Since there is no hmm hit in ORF, we can\'t continue processing...'
+    sys.exit(1)
 
   _MakeCountsFiles(output, output_files)
 
   # Zips all output files together.
   zipped_files_filename = MakeOutputFile(['all_files'], extension='.zip')
-  zipped_files = zipfile.ZipFile(zipped_files_filename, 'w')
+  zipped_files = zipfile.ZipFile(zipped_files_filename, 'w', allowZip64=True)
   output['all_files'] = os.path.basename(zipped_files_filename)
   for file_name in output_files:
     if os.path.exists(file_name):
@@ -1187,13 +1307,17 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
   output['phylogenetic_classification'] = do_phylogenetic_classification
   output['sequence_classification'] = do_sequence_classification
   output['parameters'] = parameters
-  task_id = RunPipeline.request.id
-  conn = sqlite3.connect('databases/results.db')
-  cursor = conn.cursor()
-  cursor.execute('INSERT INTO results VALUES(?, ?, CURRENT_TIMESTAMP, 0)',
+  if task_id >= 0:
+    conn = sqlite3.connect('databases/results.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO results VALUES(?, ?, CURRENT_TIMESTAMP, 0)',
                  (task_id, json.dumps(dict(output))))
-  conn.commit()
-  conn.close()
+    conn.commit()
+    conn.close()
+
+  print >> sys.stderr, 'Job ran successfully. The following files are now available:\n'
+  for file_name in output_files:
+    print >> sys.stderr, file_name
 
   # Cleanup if no exceptions occured.
   for temp_file in temp_files:

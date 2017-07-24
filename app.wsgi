@@ -42,6 +42,17 @@ host_name = socket.gethostname()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 logging.basicConfig(level=logging.DEBUG)
 
+# Add in required path for hmmstat etc.
+extra_path = ''
+try:
+  with open('path.txt') as f:
+    for l in f:
+      extra_path = l.strip()
+      break
+except:
+  pass
+os.environ["PATH"] += os.pathsep + extra_path
+
 # Allow large requests.
 BaseRequest.MAX_PARAMS = 10000
 BaseRequest.MEMFILE_MAX = 1024 * 1024
@@ -433,7 +444,8 @@ def retrieve_results(results):
   if not os.path.isfile(output_file):
     abort(404, 'Results file not found')
     return
-  return static_file(results, root='output', download='%s.tsv' % results,
+  filename = results if '.tsv' in results else '%s.tsv' % results
+  return static_file(results, root='output', download=filename,
                      mimetype='text/plain')
 
 @route('/reads/<reads>')
@@ -442,7 +454,8 @@ def retrieve_results(reads):
   if not os.path.isfile(output_file):
     abort(404, 'Results file not found')
     return
-  return static_file(reads, root='output', download='%s.faa' % reads,
+  filename = reads if '.fa' in reads else '%s.fa' % reads
+  return static_file(reads, root='output', download=filename,
                      mimetype='text/plain')
 
 @route('/alignment/<msa>')
@@ -451,8 +464,8 @@ def retrieve_alignment(msa):
   if not os.path.isfile(output_file):
     abort(404, 'Results file not found')
     return
-  return static_file(msa, root='output', download=(msa if '.fa' in msa else
-                                                   '%s.faa' % msa),
+  filename = msa if '.fa' in msa else '%s.fa' % msa
+  return static_file(msa, root='output', download=filename,
                      mimetype='text/plain')
 
 @route('/zip/<all_files>')
@@ -478,7 +491,8 @@ def retrieve_log(log):
   if not os.path.isfile(output_file):
     abort(404, 'Results file not found')
     return
-  return static_file(log, root='output', download='%s.txt' % log,
+  filename = log if '.txt' in log else '%s.txt' % log
+  return static_file(log, root='output', download=filename,
                      mimetype='text/plain')
 
 @route('/krona/<krona>')
@@ -495,7 +509,8 @@ def retrieve_tree(tree):
   if not os.path.isfile(output_file):
     abort(404, 'Results file not found')
     return
-  return static_file(tree, root='output', download='%s.newick' % tree,
+  filename = tree if '.newick' in tree else '%s.newick' % tree
+  return static_file(tree, root='output', download=filename,
                      mimetype='text/plain')
 
 @route('/status/<job>')
