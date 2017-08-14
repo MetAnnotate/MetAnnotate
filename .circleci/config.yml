@@ -33,6 +33,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            virtualenv .venv/bin/activate
             sudo pip install -r requirements.txt
 
       - save_cache:
@@ -44,7 +45,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
+            
             python manage.py test
 
       - store_artifacts:
