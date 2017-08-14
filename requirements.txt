@@ -1,0 +1,10 @@
+MyApp
+Framework==0.9.4
+Library>=0.2
+
+numpy
+celery
+taxtastic
+lxml
+python-gflags
+ete2
