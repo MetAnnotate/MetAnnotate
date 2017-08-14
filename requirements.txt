@@ -1,5 +1,6 @@
 numpy
 celery
+PyFlakes
 taxtastic
 lxml
 python-gflags
