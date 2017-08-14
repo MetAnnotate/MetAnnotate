@@ -1,3 +1,14 @@
+python-dev == 2.7
+build-essential
+default-jre
+git
+wget
+python-mysqldb
+rabbitmq-server
+libssl-dev
+libffi-dev
+sqlite3
+PyFlakes
 numpy
 celery
 taxtastic
