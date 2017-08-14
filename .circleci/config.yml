@@ -3,12 +3,15 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
+machine:
+  python:
+    version: pypy-2.7.1
 jobs:
   build:
     docker:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:2.7
+      - image: circleci/python:3.6.1
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -30,7 +33,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python2 -m venv venv
+            python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
 
