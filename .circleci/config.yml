@@ -45,6 +45,7 @@ jobs:
       - run:
           name: run tests
           command: |
+            sudo bash base_installation.sh
             sudo bash test_metannotate.sh
 
       - store_artifacts:
