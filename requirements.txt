@@ -1,4 +1,4 @@
-python-dev == 2.7
+python-dev
 build-essential
 default-jre
 git
