@@ -46,7 +46,6 @@ jobs:
           name: run tests
           command: |
             
-            python manage.py test
 
       - store_artifacts:
           path: test-reports
