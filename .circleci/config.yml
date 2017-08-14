@@ -33,7 +33,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            virtualenv . venv/bin/activate
+            virtualenv .venv/bin/activate
             pip install -r requirements.txt
 
       - save_cache:
