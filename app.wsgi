@@ -10,14 +10,15 @@ import logging
 import os
 import random
 import re
-import sqlite3
 import signal
 import socket
+import sqlite3
 import subprocess
 import sys
 import tempfile
 import time
 import traceback
+
 sys.path.append(os.path.dirname(__file__))
 
 from Bio import SeqIO
@@ -25,16 +26,15 @@ from Bio import SeqIO
 import paramiko
 
 from bottle import route, post, run, static_file, template, request, BaseRequest
-from bottle import delete, default_app, abort, response, redirect
+from bottle import delete, default_app, abort, redirect
 
 from beaker.middleware import SessionMiddleware
 
-import celery
 import celery.result as cr
 import celery.backends.amqp as amqp
 import celery.task.control as control
 
-import tasks
+from modules import tasks
 
 local_run = False
 host_name = socket.gethostname()
