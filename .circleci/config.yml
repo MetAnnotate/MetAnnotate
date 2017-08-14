@@ -45,6 +45,7 @@ jobs:
       - run:
           name: run tests
           command: |
+            sudo bash test_metannotate.sh
 
       - store_artifacts:
           path: test-reports
