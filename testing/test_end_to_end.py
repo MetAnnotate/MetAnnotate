@@ -25,9 +25,9 @@ class testEndToEnd(unittest.TestCase):
             tempStringReference = ''
             tempStringGenerated = ''
             for line in referenceFaFiles[i]:
-                tempStringReference = tempStringReference + line
+                tempStringReference = tempStringReference.rstrip('\r\n') + line
             for line in generatedFaFiles[i]:
-                tempStringGenerated = tempStringGenerated + line
+                tempStringGenerated = tempStringGenerated.rstrip('\r\n') + line
             self.assertEqual(tempStringReference, tempStringGenerated)
 
 
