@@ -3,7 +3,7 @@ import sys
 
 import gflags
 
-import tasks
+from modules import tasks
 
 FLAGS = gflags.FLAGS
 

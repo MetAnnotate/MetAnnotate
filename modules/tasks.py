@@ -1,14 +1,21 @@
-import sys,os,re,tempfile,time,glob,commands,random,subprocess,traceback,csv
-import cStringIO as StringIO
 import cPickle as pickle
-from collections import defaultdict, Counter
-import celery
-import heapq
+import csv
 import json
+import os
+import random
+import re
 import shutil
 import sqlite3
+import subprocess
+import sys
+import tempfile
+import time
 import zipfile
-import hash
+from collections import defaultdict, Counter
+
+import celery
+
+from modules import hash
 
 CONCURRENCY = '2'
 CONCURRENCY_SPECIFIED = False
@@ -418,7 +425,7 @@ def UseReferenceHits(reference_msa, temp_files):
   return (filtered_refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary)
 
 def _ComputeHashName(hmm_evalue,filter_multi,hmm_file):
-  return hash.md5hash(hmm_file) + hash.hexhash((hmm_evalue,filter_multi))
+  return hash.md5hash(hmm_file) + hash.hexhash((hmm_evalue, filter_multi))
 
 def _prependCachePrefix(file_name):
   return CACHE_DIR+'/'+file_name
