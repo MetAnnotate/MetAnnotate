@@ -24,3 +24,6 @@ downloads/*
 software/*
 path.txt
 .idea
+cache
+test_output
+test_tmp
