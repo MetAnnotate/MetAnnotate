@@ -40,12 +40,13 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
-        
+
       # run tests!
       - run:
           name: run tests
           command: |
-            sudo -H python test_main.py
+            cd testing
+            nosetests -v
 
       - store_artifacts:
           path: test-reports
