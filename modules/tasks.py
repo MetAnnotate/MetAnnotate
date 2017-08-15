@@ -34,6 +34,7 @@ except:
   pass
 os.environ["PATH"] += os.pathsep + extra_path
 
+
 def run_process(args, stdout_file=None, meta=None, task=None):
   stdout_handle = (open(stdout_file, 'w') if stdout_file else
                    tempfile.NamedTemporaryFile(dir=TMP_DIR))
