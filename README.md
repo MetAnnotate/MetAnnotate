@@ -1,3 +1,5 @@
+[![Gitter chat](https://badges.gitter.im/Metannotate.png)](https://gitter.im/Metannotate)
+
 Table of Contents
 =========================
 
