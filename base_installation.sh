@@ -19,7 +19,6 @@ if [ ! `which pip` ] ; then
   cd ..
 fi
 
-
 echo -e "\nInstalling python packages through pip.\n"
 pip=`which pip`
 if [ -e ~/.local/bin/pip ] ; then
@@ -41,7 +40,6 @@ if [ ! `which ktImportText` ] ; then
   cd $metAnnotateDir
 fi
 
-
 echo -e "\nInstalling Linuxbrew\n"
 if [ ! `which brew` ] ; then
     yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
@@ -57,7 +55,7 @@ echo -e "\nInstalling HMMER & Easel mini-applications.\n"
 if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   cd downloads
   wget "http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz" #updated address here
-  tar -xzf hmmer-3.1b2-linux-intel-x86_64.tar.gz
+  tar --no-same-owner -xzf hmmer-3.1b2-linux-intel-x86_64.tar.gz
   cd hmmer*
   ./configure
   make
@@ -134,11 +132,12 @@ rm -f precompute/taxdump.tar.gz
 
 echo "$HOME/.local/bin/" > path.txt
 
-echo -e "Prerequisites have been installed and the command line version of metAnnotate has been set up.\n"
-echo -e "\nIMPORTANT: metAnnotate is still not fully ready to be run. You need to download the refseq database\n"
-echo -e "and place it in the data directory (metannotate/data/) as \"Refseq.fa\". You also need to place the ssi\n"
-echo -e "index of this file in the same directory, as \"Refseq.fa.ssi\". To build Refseq.fa, desired files can be\n"
-echo -e "downloaded from \"ftp://ftp.ncbi.nlm.nih.gov/refseq/release/\" and concatenated. Alternatively, this fasta \n"
-echo -e "file can be generated from local NCBI blastdb files. To create the ssi index, simply run \"esl-sfetch —index \n"
+echo -e "Prerequisites have been installed and the command line version of metAnnotate has been set up."
+echo -e "\nIMPORTANT: metAnnotate is still not fully ready to be run. You need to download the refseq database"
+echo -e "and place it in the data directory (metannotate/data/) as \"Refseq.fa\". You also need to place the ssi"
+echo -e "index of this file in the same directory, as \"Refseq.fa.ssi\". To build Refseq.fa, desired files can be"
+echo -e "downloaded from \"ftp://ftp.ncbi.nlm.nih.gov/refseq/release/\" and concatenated. Alternatively, this fasta"
+echo -e "file can be generated from local NCBI blastdb files. To create the ssi index, simply run \"esl-sfetch —index"
 echo -e "Refseq.fa\ when in the data directory.\n"
+
 echo -e "\nTo install the web UI version of metAnnotate, please run the full_installation.sh script with sudo permissions."
