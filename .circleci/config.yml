@@ -18,14 +18,7 @@ jobs:
           name: command line install
           command: |
             ls
-            cd Metannotate
-            sudo -H bash base_installation.sh
 
 
-      # run tests!
-      - run:
-          name: run tests
-          command: |
-            sudo bash test_metannotate.sh
-            cd testing
-            nosetests -v
+
+      
