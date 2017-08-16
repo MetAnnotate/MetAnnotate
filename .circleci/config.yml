@@ -47,8 +47,8 @@ jobs:
       - run:
           name: run tests
           command: |
-            sudo -H bash base_installation.sh
-            sudo bash test_metannotate.sh
+            ./base_installation.sh
+            ./test_metannotate.sh
             cd testing
             nosetests -v
 
