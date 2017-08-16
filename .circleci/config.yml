@@ -12,12 +12,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Installing
+          name: Install dependencies
           command: |
-            sudo -H bash base_installation.sh
-            sudo bash test_metannotate.sh
+            virtualenv .venv/bin/activate
+            sudo apt-get install build-essential curl file git python-setuptools ruby
       - run:
-          name: Testing
+          name: run tests
           command: |
+            mkdir -p ~/.local/bin/
+            export TERM=xterm
+            ./base_installation.sh
+            ./test_metannotate.sh
             cd testing
             nosetests -v
