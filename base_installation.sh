@@ -24,7 +24,7 @@ pip=`which pip`
 if [ -e ~/.local/bin/pip ] ; then
   pip=~/.local/bin/pip
 fi
-$pip install --user -r requirements.txt --ignore-installed
+$pip install --user -r requirements.txt --ignore-installed --quiet
 
 echo -e "\nInstalling KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
