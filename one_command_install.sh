@@ -50,4 +50,4 @@ fi
 
 echo "=======Test passed====="
 
-echo "Please start server by running 'bash start-server.sh'"
+echo "Please start server by running 'bash shell_scritps/start-server.sh'"

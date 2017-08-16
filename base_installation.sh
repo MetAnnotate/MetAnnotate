@@ -36,12 +36,7 @@ pip=`which pip`
 if [ -e ~/.local/bin/pip ] ; then
   pip=~/.local/bin/pip
 fi
-sudo $pip install --user numpy --ignore-installed
-sudo $pip install --user celery --ignore-installed
-sudo $pip install --user taxtastic --ignore-installed
-sudo $pip install --user lxml --ignore-installed
-sudo $pip install --user python-gflags --ignore-installed
-sudo $pip install --user ete2 --ignore-installed
+$pip install --user -r requirements.txt --ignore-installed
 
 echo "Installing KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
@@ -121,7 +116,7 @@ crontab -l > mycron # saving current cronjob
 #echo new cron into cron file
 # cleaning cache every monday at 5am
 echo "# added by metannotate" >> mycron
-echo "00 05 * * 1 cd ${metAnnotateDir} && bash clean_cache.sh" >> mycron
+echo "00 05 * * 1 cd ${metAnnotateDir} && bash shell_scripts/clean_cache.sh" >> mycron
 #install new cron file
 crontab mycron
 rm mycron
