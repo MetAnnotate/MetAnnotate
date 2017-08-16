@@ -18,19 +18,6 @@ if [ ! `which pip` ] ; then
   cd ..
 fi
 
-echo "Installing EMBOSS transeq.\n"
-if [ ! `which transeq` ] ; then
-  cd downloads
-  wget "ftp://emboss.open-bio.org/pub/EMBOSS/old/6.5.0/EMBOSS-6.5.7.tar.gz"
-  tar -xzf EMBOSS-6.5.7.tar.gz
-  cd EMBOSS*
-  ./configure --without-x
-  make
-  cp -R emboss/ "$software"/
-  ln -s "$software"/emboss/transeq ~/.local/bin/transeq
-  cd $metAnnotateDir
-fi
-
 echo "Installing python packages through pip.\n"
 pip=`which pip`
 if [ -e ~/.local/bin/pip ] ; then
@@ -51,6 +38,17 @@ if [ ! `which ktImportText` ] ; then
   chmod a+x scripts/*.pl
   cd $metAnnotateDir
 fi
+
+echo "Installing Linuxbrew"
+if [ ! `which brew` ] ; then
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
+    PATH="$HOME/.linuxbrew/bin:$PATH"
+    export MANPATH="$(brew --prefix)/share/man:$MANPATH"
+    export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
+fi
+
+brew tap homebrew/science
+brew install emboss --without-x
 
 echo "Installing HMMER & Easel mini-applications.\n"
 if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
