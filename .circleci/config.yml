@@ -14,12 +14,12 @@ jobs:
 
     steps:
       - checkout
-      
+
       - run:
           name: install dependencies
           command: |
             virtualenv .venv/bin/activate
-            sudo pip install -r requirements.txt
+            sudo -H bash base_installation.sh
 
       - save_cache:
           paths:
@@ -30,7 +30,6 @@ jobs:
       - run:
           name: run tests
           command: |
-            sudo -H bash base_installation.sh
             sudo bash test_metannotate.sh
             cd testing
             nosetests -v
