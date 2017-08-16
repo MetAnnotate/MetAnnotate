@@ -11,12 +11,14 @@ jobs:
     machine:
       enabled: true
 
-    working_directory: ~/Metannotate
+    working_directory: ~/repo
 
     steps:
       - run:
           name: command line install
           command: |
+            ls
+            cd Metannotate
             sudo -H bash base_installation.sh
 
 
