@@ -16,9 +16,10 @@ jobs:
       - checkout
 
       - run:
-          name: install dependencies
+          name: Activate venv and install Metannotate
           command: |
             virtualenv .venv/bin/activate
+            pip install -r requirements.txt
             sudo -H bash base_installation.sh
 
       - save_cache:
