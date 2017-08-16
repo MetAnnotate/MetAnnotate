@@ -5,7 +5,7 @@
 version: 2
 machine:
   python:
-    version: pypy-2.7.1
+    version: python-2.7.1
 jobs:
   build:
     docker:
