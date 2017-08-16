@@ -34,7 +34,6 @@ jobs:
           name: install dependencies
           command: |
             virtualenv .venv/bin/activate
-            sudo pip install -r requirements.txt
             sudo apt-get install build-essential curl file git python-setuptools ruby
 
 
@@ -47,6 +46,8 @@ jobs:
       - run:
           name: run tests
           command: |
+            mkdir -p ~/.local/bin/
+            export TERM=xterm
             ./base_installation.sh
             ./test_metannotate.sh
             cd testing
