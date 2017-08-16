@@ -15,4 +15,9 @@ jobs:
           name: Installing
           command: |
             sudo -H bash base_installation.sh
-      
+      - run:
+          name: Testing
+          command: |
+            sudo bash test_metannotate.sh
+            cd testing
+            nosetests -v
