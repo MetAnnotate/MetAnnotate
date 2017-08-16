@@ -48,7 +48,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            sudo -H base_installation.sh
+            sudo -H bash base_installation.sh
             cd testing
             nosetests -v
 

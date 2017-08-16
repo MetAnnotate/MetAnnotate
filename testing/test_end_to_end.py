@@ -7,10 +7,7 @@ class testEndToEnd(unittest.TestCase):
 
     # Unit test for validating test outputs from install to test script
     def test_endtoend(self):
-        # Call the script that runs a base install and the test_metannotate.sh script
-        subprocess.call("cd ..", shell=True)
-        subprocess.call("sudo -H bash base_installation.sh")
-        subprocess.call("cd testing")
+        # Call the script that runs the test_metannotate.sh script
         subprocess.call("sudo -H bash test_metannotate.sh")
         generatedFaFiles = []
 
