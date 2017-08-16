@@ -4,8 +4,11 @@ jobs:
 
     working_directory: ~/repo
 
-    machine: true
-    
+    machine:
+      python:
+        version: 2.7
+      enabled: true
+
     steps:
       - checkout
-      - run: echo "TESTING"
+      - run: echo ls
