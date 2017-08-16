@@ -11,7 +11,7 @@ jobs:
     machine:
       enabled: true
 
-    working_directory: ~/repo
+    working_directory: ~/Metannotate
 
     steps:
       - run:
