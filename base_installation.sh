@@ -41,7 +41,7 @@ fi
 
 echo "Installing Linuxbrew"
 if [ ! `which brew` ] ; then
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
+    yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
     PATH="$HOME/.linuxbrew/bin:$PATH"
     export MANPATH="$(brew --prefix)/share/man:$MANPATH"
     export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
