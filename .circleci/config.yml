@@ -19,9 +19,9 @@ jobs:
       - run:
           name: run tests
           command: |
-            sudo mkdir -p ~/.local/bin/
-            sudo export TERM=xterm
-            sudo bash base_installation.sh
-            sudo bash test_metannotate.sh
+            mkdir -p ~/.local/bin/
+            export TERM=xterm
+            sudo -H bash base_installation.sh
+            sudo -H bash test_metannotate.sh
             cd testing
             nosetests -v
