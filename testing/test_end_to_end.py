@@ -29,7 +29,7 @@ class testEndToEnd(unittest.TestCase):
                     tempStringGenerated = tempStringGenerated.rstrip('\r\n') + line
                 self.assertEqual(tempStringReference, tempStringGenerated)
         else:
-            print("Please run test_metannotate.sh and verify that it works before running nosetests")
+            print("Please run test_metannotate.sh and verify that it works before running nosetests.")
 
 
 if __name__ == '__main__':
