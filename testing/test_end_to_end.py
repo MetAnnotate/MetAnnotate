@@ -8,7 +8,7 @@ class testEndToEnd(unittest.TestCase):
     # Unit test for validating test outputs from install to test script
     def test_endtoend(self):
         # Call the script that runs the test_metannotate.sh script
-        subprocess.call("sudo -H bash test_metannotate.sh")
+        subprocess.call("sudo -H bash test_metannotate.sh", shell=True)
         generatedFaFiles = []
 
         # Fetch the generated fa files and verify that they match reference files

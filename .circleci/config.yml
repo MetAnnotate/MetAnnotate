@@ -6,9 +6,6 @@ version: 2
 machine:
   python:
     version: pypy-2.7.1
-dependencies:
-  cache_directories:
-    - "data"
 jobs:
   build:
     docker:
