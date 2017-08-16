@@ -1,7 +1,11 @@
 version: 2
 jobs:
   build:
-    machine: enabled
+
+    working_directory: ~/repo
+
+    machine: true
+    
     steps:
       - checkout
       - run: echo "TESTING"
