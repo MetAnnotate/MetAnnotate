@@ -9,6 +9,8 @@ machine:
 jobs:
   build:
     machine: true
+      python:
+        version: 2.7.1
 
     working_directory: ~/repo
 
