@@ -14,4 +14,4 @@ jobs:
       - run:
           name: Installing
           command: |
-            sudo pip install -r requirements.txt
+            sudo -H bash base_installation.sh
