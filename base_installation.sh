@@ -54,7 +54,7 @@ echo "Installing HMMER & Easel mini-applications.\n"
 if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   cd downloads
   wget "http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz" #updated address here
-  tar -xzf hmmer-3.1b2-linux-intel-x86_64.tar.gz
+  tar --no-same-owner -xzf hmmer-3.1b2-linux-intel-x86_64.tar.gz
   cd hmmer*
   ./configure
   make
