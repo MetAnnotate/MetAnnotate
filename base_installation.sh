@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Installing command-line version of metAnnotate...\n"
+echo -e "\nInstalling command-line version of metAnnotate...\n"
 
 metAnnotateDir=`pwd`
 software=`pwd`/software
@@ -9,7 +9,8 @@ PATH="${PATH}:${HOME}/.local/bin"
 mkdir -p downloads
 mkdir -p software
 mkdir -p cache
-echo "Installing pip.\n"
+
+echo -e "\nInstalling pip.\n"
 if [ ! `which pip` ] ; then
   cd downloads
   wget "https://bootstrap.pypa.io/get-pip.py"
@@ -18,7 +19,7 @@ if [ ! `which pip` ] ; then
   cd ..
 fi
 
-echo "Installing python packages through pip.\n"
+echo -e "\nInstalling python packages through pip.\n"
 pip=`which pip`
 if [ -e ~/.local/bin/pip ] ; then
   pip=~/.local/bin/pip
@@ -30,7 +31,7 @@ sudo $pip install --user lxml --ignore-installed
 sudo $pip install --user python-gflags --ignore-installed
 sudo $pip install --user ete2 --ignore-installed
 
-echo "Installing KronaTools.\n"
+echo -e "\nInstalling KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
   cd included_software/KronaTools-2.5/
   chmod a+x install.pl
@@ -39,7 +40,7 @@ if [ ! `which ktImportText` ] ; then
   cd $metAnnotateDir
 fi
 
-echo "Installing Linuxbrew"
+echo -e "\nInstalling Linuxbrew\n"
 if [ ! `which brew` ] ; then
     yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
     PATH="$HOME/.linuxbrew/bin:$PATH"
@@ -50,7 +51,7 @@ fi
 brew tap homebrew/science
 brew install emboss --without-x
 
-echo "Installing HMMER & Easel mini-applications.\n"
+echo -e "\nInstalling HMMER & Easel mini-applications.\n"
 if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   cd downloads
   wget "http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz" #updated address here
@@ -67,14 +68,14 @@ if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   cd $metAnnotateDir
 fi
 
-echo "Installing USEARCH.\n"
+echo -e "\nInstalling USEARCH.\n"
 if [ ! `which usearch` ] ; then
   echo "Changing execution permission on usearch"
   chmod a+x "${metAnnotateDir}/included_software/usearch"
   ln -s "${metAnnotateDir}/included_software/usearch" ~/.local/bin/usearch
 fi
 
-echo "Installing FastTreeMP.\n"
+echo -e "\nInstalling FastTreeMP.\n"
 if [ ! `which FastTreeMP` ] ; then
   cd downloads
   wget "http://www.microbesonline.org/fasttree/FastTreeMP"
@@ -83,7 +84,7 @@ if [ ! `which FastTreeMP` ] ; then
   cd $metAnnotateDir
 fi
 
-echo "Installing pplacer and guppy.\n"
+echo -e "\nInstalling pplacer and guppy.\n"
 if [ ! `which guppy` ] ; then
   cd downloads
   wget "https://github.com/matsen/pplacer/releases/download/v1.1.alpha18/pplacer-linux-v1.1.alpha18-2-gcb55169.zip"
@@ -95,7 +96,7 @@ if [ ! `which guppy` ] ; then
   cd $metAnnotateDir
 fi
 
-echo "Downloading and indexing taxonomy info.\n"
+echo -e "\nDownloading and indexing taxonomy info.\n"
 if [ ! -e data/taxonomy.pickle ] ; then
   cd precompute
   wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
@@ -105,7 +106,7 @@ if [ ! -e data/taxonomy.pickle ] ; then
   cd $metAnnotateDir
 fi
 
-echo "Downloading and indexing gi number to taxid mappings.\n"
+echo -e "\nDownloading and indexing gi number to taxid mappings.\n"
 if [ ! -e data/gi_taxid_prot.dmp ] ; then
   cd precompute
   wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz"
@@ -114,7 +115,7 @@ if [ ! -e data/gi_taxid_prot.dmp ] ; then
   cd $metAnnotateDir
 fi
 
-echo "Installing cronjob to clean cache"
+echo -e "\nInstalling cronjob to clean cache. \n"
 crontab -l > mycron # saving current cronjob
 #echo new cron into cron file
 # cleaning cache every monday at 5am
@@ -131,4 +132,11 @@ rm -f precompute/taxdump.tar.gz
 
 echo "$HOME/.local/bin/" > path.txt
 
-echo -e "Prerequisites have been installed and the command line version of metAnnotate has been set up.\n\nIMPORTANT: metAnnotate is still not fully ready to be run. You need to download the refseq database and place it in the data directory (metannotate/data/) as \"Refseq.fa\". You also need to place the ssi index of this file in the same directory, as \"Refseq.fa.ssi\". To build Refseq.fa, desired files can be downloaded from \"ftp://ftp.ncbi.nlm.nih.gov/refseq/release/\" and concatenated. Alternatively, this fasta file can be generated from local NCBI blastdb files. To create the ssi index, simply run \"esl-sfetch —index Refseq.fa\" when in the data directory.\n\nTo install the web UI version of metAnnotate, please run the full_installation.sh script with sudo permissions."
+echo -e "Prerequisites have been installed and the command line version of metAnnotate has been set up.\n"
+echo -e "\nIMPORTANT: metAnnotate is still not fully ready to be run. You need to download the refseq database\n"
+echo -e "and place it in the data directory (metannotate/data/) as \"Refseq.fa\". You also need to place the ssi\n"
+echo -e "index of this file in the same directory, as \"Refseq.fa.ssi\". To build Refseq.fa, desired files can be\n"
+echo -e "downloaded from \"ftp://ftp.ncbi.nlm.nih.gov/refseq/release/\" and concatenated. Alternatively, this fasta \n"
+echo -e "file can be generated from local NCBI blastdb files. To create the ssi index, simply run \"esl-sfetch —index \n"
+echo -e "Refseq.fa\ when in the data directory.\n"
+echo -e "\nTo install the web UI version of metAnnotate, please run the full_installation.sh script with sudo permissions."
