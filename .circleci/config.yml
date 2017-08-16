@@ -15,7 +15,7 @@ jobs:
           name: Install dependencies
           command: |
             virtualenv .venv/bin/activate
-            sudo apt-get install build-essential curl file git python-setuptools ruby
+            sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
       - run:
           name: run tests
           command: |
