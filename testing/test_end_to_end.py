@@ -7,7 +7,6 @@ class testEndToEnd(unittest.TestCase):
 
     # Unit test for validating test outputs from install to test script
     def test_endtoend(self):
-        # Call the script that runs the test_metannotate.sh script
         generatedFaFiles = []
 
         # Fetch the generated fa files and verify that they match reference files
