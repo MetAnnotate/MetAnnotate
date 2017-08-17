@@ -6,7 +6,7 @@ import glob
 class testEndToEnd(unittest.TestCase):
 
     # Method that returns the md5 hash of a given file
-    def generate_md5(filename):
+    def generate_md5(self, filename):
         hash_md5 = hashlib.md5()
         with open(filename, "rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):
@@ -20,6 +20,7 @@ class testEndToEnd(unittest.TestCase):
         # Fetch the generated fa files and verify that they match reference files
         for filename in glob.glob("../test_output/*.fa"):
             if filename.__contains__("msa") or filename.__contains__("refseq"):
+                print(filename)
                 generated_hash.append(self.generate_md5(filename))
 
         reference_hash = [self.generate_md5("test_constants/rpoB_0_msa_0.fa"),
