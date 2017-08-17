@@ -65,7 +65,7 @@ def run_process(args, stdout_file=None, meta=None, task=None):
         raise Exception('Command failed: %s', ' '.join(args))
 
 
-def GetLineage(taxid, parents):
+def get_lineage(taxid, parents):
     lineage = []
     current = taxid
     while current != 1 and current in parents:
@@ -74,8 +74,8 @@ def GetLineage(taxid, parents):
     return lineage
 
 
-def GetLineageNames(taxid, parents, name_dictionary):
-    lineage = GetLineage(taxid, parents)
+def get_lineage_names(taxid, parents, name_dictionary):
+    lineage = get_lineage(taxid, parents)
     return [name_dictionary[taxid] for taxid in lineage]
 
 
@@ -83,8 +83,8 @@ LINEAGE_LEVELS = ('species', 'genus', 'family', 'order', 'class', 'phylum',
                   'superkingdom')
 
 
-def GetLineageForHomolog(taxid, parents, name_dictionary, ranks):
-    lineage = GetLineage(taxid, parents)
+def get_lineage_for_homolog(taxid, parents, name_dictionary, ranks):
+    lineage = get_lineage(taxid, parents)
     lineage = {ranks[l]: name_dictionary[l] for l in lineage}
     final_lineage = []
     best = 'unclassified'
@@ -94,7 +94,7 @@ def GetLineageForHomolog(taxid, parents, name_dictionary, ranks):
     return final_lineage
 
 
-def _ChooseRepresentatives(node):
+def choose_representatives(node):
     new_phylogeny = {}
     for rank, counts in node.phylogeny.items():
         new_phylogeny[rank] = counts.most_common(1)[0]
@@ -105,30 +105,30 @@ def _ChooseRepresentatives(node):
     node.phylogeny = {k: (v[0], v[1] / max_count) for k, v in new_phylogeny.items()}
 
 
-def UpdateTreeWithPhyloConsistency(node, taxid_dictionary, ranks, parents):
+def update_tree_with_phylo_consistency(node, taxid_dictionary, ranks, parents):
     node.phylogeny = defaultdict(lambda: Counter())
     if node.is_leaf():
         if node.name and node.name.startswith('gi|'):
             gi_num = node.name.split("|")[1]
             taxid = taxid_dictionary[gi_num]
-            lineage = GetLineage(taxid, parents)
+            lineage = get_lineage(taxid, parents)
             for taxid in lineage:
                 rank = ranks[taxid]
                 node.phylogeny[rank][taxid] = 1
     else:
         for child in node.children:
-            UpdateTreeWithPhyloConsistency(child, taxid_dictionary, ranks, parents)
+            update_tree_with_phylo_consistency(child, taxid_dictionary, ranks, parents)
             for rank, counts in child.phylogeny.iteritems():
                 node.phylogeny[rank].update(counts)
-            _ChooseRepresentatives(child)
+            choose_representatives(child)
     if node.is_root():
-        _ChooseRepresentatives(node)
+        choose_representatives(node)
 
 
 # make temp file in TMP_DIR and push it to `all_temp` list,
 # so that we can clean up temp files later
 # return the name of the temp file made
-def _MakeTemp(all_temp, make_directory=False, extension=''):
+def make_temp(all_temp, make_directory=False, extension=''):
     if make_directory:
         temp_file = tempfile.mkdtemp(dir=TMP_DIR)
     else:
@@ -138,7 +138,7 @@ def _MakeTemp(all_temp, make_directory=False, extension=''):
     return temp_file
 
 
-def _SafeReadName(name, description, orf_index=None, coords=None):
+def safe_read_name(name, description, orf_index=None, coords=None):
     parts = [re.sub(r'[^\w-]+', '_', name).strip('_')]
     if description != '-':
         parts.append(re.sub(r'[^\w-]+', '_', description).strip('_'))
@@ -149,11 +149,11 @@ def _SafeReadName(name, description, orf_index=None, coords=None):
     return '_'.join(parts)
 
 
-def _TrimSafeReadName(safe_name):
+def trim_safe_read_name(safe_name):
     return safe_name[:safe_name.rindex('_ma')]
 
 
-def _LengthFromName(safe_name):
+def length_from_name(safe_name):
     parts = safe_name.split('_')
     return str(int(parts[-1]) - int(parts[-3]) + 1)
 
@@ -162,15 +162,15 @@ app = celery.Celery('tasks', broker='amqp://', backend='amqp://')
 app.config_from_object('celeryconfig')
 
 
-def _CreateKronaCountFile(temp_files, counts, parents, name_dictionary):
-    krona_text_file = _MakeTemp(temp_files)
+def create_krona_count_file(temp_files, counts, parents, name_dictionary):
+    krona_text_file = make_temp(temp_files)
     with open(krona_text_file, 'w') as f:
         for taxid, count in counts.iteritems():
             if not taxid:
                 f.write(str(count))
                 f.write('\n')
                 continue
-            lineage = reversed(GetLineageNames(taxid, parents, name_dictionary))
+            lineage = reversed(get_lineage_names(taxid, parents, name_dictionary))
             lineage = list(lineage)
             lineage.insert(0, str(count))
             f.write('\t'.join(lineage))
@@ -178,7 +178,7 @@ def _CreateKronaCountFile(temp_files, counts, parents, name_dictionary):
     return krona_text_file
 
 
-def _CreateMergedKronaFile(all_count_files, krona_file):
+def create_merged_krona_file(all_count_files, krona_file):
     # Prepare krona chart for HMM.
     to_merge = []
     for dataset_name, clade_counts in all_count_files:
@@ -187,18 +187,18 @@ def _CreateMergedKronaFile(all_count_files, krona_file):
     run_process(['ktImportText', '-o', krona_file] + to_merge)
 
 
-def _CreateMergedKronaAndAssignLinks(dataset_type, krona_name, dataset_names,
+def create_merged_krona_and_assign_links(dataset_type, krona_name, dataset_names,
                                      main_name, counts, elements, main_element,
                                      temp_files, output_files):
-    krona_file = MakeOutputFile([krona_name, 'krona'],
+    krona_file = make_output_file([krona_name, 'krona'],
                                 all_output_files=output_files,
                                 extension='.html')
     krona_file_base = os.path.basename(krona_file)
-    combined_clade_counts = _MakeTemp(temp_files)
+    combined_clade_counts = make_temp(temp_files)
     run_process(['cat'] + [count for count in counts if count],
                 stdout_file=combined_clade_counts)
     counts.append(combined_clade_counts)
-    _CreateMergedKronaFile(zip(dataset_names + [main_name], counts), krona_file)
+    create_merged_krona_file(zip(dataset_names + [main_name], counts), krona_file)
     dataset_offset = 0
     krona_key = '%s_krona' % dataset_type
     for element_index, element in enumerate(elements):
@@ -210,8 +210,8 @@ def _CreateMergedKronaAndAssignLinks(dataset_type, krona_name, dataset_names,
         krona_file_base, dataset_offset)
 
 
-def _GetHMMInfo(hmm_index, hmm_file, hmm_file_name, temp_files):
-    hmm_stat_file = _MakeTemp(temp_files)
+def get_hmm_info(hmm_index, hmm_file, hmm_file_name, temp_files):
+    hmm_stat_file = make_temp(temp_files)
     run_process(['hmmstat', hmm_file], stdout_file=hmm_stat_file)
     hmm_family = None
     hmm_length = 1
@@ -224,7 +224,7 @@ def _GetHMMInfo(hmm_index, hmm_file, hmm_file_name, temp_files):
                 break
     if not hmm_family or len(hmm_family) == 0:
         hmm_family = hmm_file_name or 'unknown_hmm'
-    hmm_family_safe = _SafeFileName(hmm_family, hmm_index)
+    hmm_family_safe = safe_file_name(hmm_family, hmm_index)
 
     hmm_description = ''
     with open(hmm_file) as f:
@@ -237,7 +237,7 @@ def _GetHMMInfo(hmm_index, hmm_file, hmm_file_name, temp_files):
     return hmm_family_safe, hmm_description, hmm_length
 
 
-def _SafeFileName(file_name, file_index):
+def safe_file_name(file_name, file_index):
     safe_name = file_name
     if (file_name.lower().endswith('.fa') or
             file_name.lower().endswith('.faa') or
@@ -247,7 +247,7 @@ def _SafeFileName(file_name, file_index):
     return '%s_%d' % (safe_name, file_index)
 
 
-def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
+def find_orf_hits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
                 hmm_family_safe, temp_files, column, task, meta, output_files):
     # Process each metagenome file.
     orf_index = 0
@@ -258,12 +258,12 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
     for orf_file_index, (orf_file_name, orf_file) in enumerate(orf_files):
         cell = {}
         column['rows'].append(cell)
-        orfs_name_safe = _SafeFileName(orf_file_name, orf_file_index)
+        orfs_name_safe = safe_file_name(orf_file_name, orf_file_index)
         safe_orf_names.append(orfs_name_safe)
 
-        msa_file = _MakeTemp(temp_files)
-        converted_msa_file = _MakeTemp(temp_files)
-        hmm_out_file = _MakeTemp(temp_files)
+        msa_file = make_temp(temp_files)
+        converted_msa_file = make_temp(temp_files)
+        hmm_out_file = make_temp(temp_files)
         run_process(['hmmsearch', '-o', '/dev/null', '-A', msa_file,
                      '--domtblout', hmm_out_file,
                      '-E' if filter_multi else '--domE', str(hmm_evalue), '--cpu',
@@ -302,7 +302,7 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
                     if int(coords[1]) - int(coords[0]) + 1 < min_alignment:
                         continue
                     description = line[description_start:-1]
-                    safe_name = _SafeReadName(name, description, orf_index, coords)
+                    safe_name = safe_read_name(name, description, orf_index, coords)
                     if filter_multi and (name, description) in sequences_hit:
                         existing = sequences_hit[(name, description)]
                         if existing in hmm_evalues:
@@ -324,7 +324,7 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
             continue
 
         # Retrieves sequences for matching hits. Avoid SeqIO for speed.
-        seqs_file = MakeOutputFile([hmm_family_safe, orfs_name_safe, 'reads'],
+        seqs_file = make_output_file([hmm_family_safe, orfs_name_safe, 'reads'],
                                    all_output_files=output_files,
                                    extension='.fa')
         seen = set()
@@ -343,7 +343,7 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
                             name = parts[0][1:]
                             description = parts[1][:-1] if len(parts) == 2 else '-'
                         if name in identifiers and description in identifiers[name]:
-                            name = _SafeReadName(name, description)
+                            name = safe_read_name(name, description)
                             if name in seen:
                                 continue
                             seen.add(name)
@@ -359,7 +359,7 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
         # the final MSA and tree.
         run_process(['esl-reformat', '-o', converted_msa_file, 'fasta',
                      msa_file])
-        hit_file = _MakeTemp(temp_files)
+        hit_file = make_temp(temp_files)
         hit_count = 0
         seen = set()
         with open(converted_msa_file) as input_handle:
@@ -381,7 +381,7 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
                         except KeyError:
                             ignore = True
                             continue
-                        name = _SafeReadName(name, description, unique_index, coords)
+                        name = safe_read_name(name, description, unique_index, coords)
                         if name in seen:
                             ignore = True
                             continue
@@ -399,8 +399,8 @@ def FindOrfHits(orf_files, hmm_evalue, min_alignment, filter_multi, hmm_file,
     return read_files, hmm_hit_files, safe_orf_names, hmm_hit_evalues
 
 
-def UseReferenceHits(reference_msa, temp_files):
-    refseq_seqs_file = _MakeTemp(temp_files)
+def use_reference_hits(reference_msa, temp_files):
+    refseq_seqs_file = make_temp(temp_files)
     refseq_ids = set()  # Temp set of gis for gi:taxid dictionary.
     with open(reference_msa) as f:
         with open(refseq_seqs_file, 'w') as out_file:
@@ -425,7 +425,7 @@ def UseReferenceHits(reference_msa, temp_files):
         return None, set(), {}
 
     # Filter refseq genes without taxid.
-    filtered_refseq_seqs_file = _MakeTemp(temp_files)
+    filtered_refseq_seqs_file = make_temp(temp_files)
     refseq_hit_ids = set()
     with open(refseq_seqs_file) as in_file:
         with open(filtered_refseq_seqs_file, 'w') as out_file:
@@ -446,24 +446,24 @@ def UseReferenceHits(reference_msa, temp_files):
     return filtered_refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary
 
 
-def _ComputeHashName(hmm_evalue, filter_multi, hmm_file):
+def compute_hash_name(hmm_evalue, filter_multi, hmm_file):
     return hash.md5hash(hmm_file) + hash.hexhash((hmm_evalue, filter_multi))
 
 
-def _prependCachePrefix(file_name):
+def prepend_cache_prefix(file_name):
     return CACHE_DIR + '/' + file_name
 
 
-def _MakeInCache(file_name):
-    filePath = _prependCachePrefix(file_name)
+def make_in_cache(file_name):
+    filePath = prepend_cache_prefix(file_name)
     open(filePath, 'a').close()
     return filePath
 
 
 # check if files with file_hash_name+extension exists
 # extensions is provided as a list
-def _CheckCache(file_hash_name, extensions):
-    file_prefix = _prependCachePrefix(file_hash_name)
+def check_cache(file_hash_name, extensions):
+    file_prefix = prepend_cache_prefix(file_hash_name)
     file_paths = [file_prefix + ext for ext in extensions]
     for f in file_paths:
         if not os.path.isfile(f):
@@ -471,9 +471,9 @@ def _CheckCache(file_hash_name, extensions):
     return file_paths
 
 
-def ComputeDomainAndMsa(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
-    file_hash_name = _ComputeHashName(hmm_evalue, filter_multi, hmm_file)
-    cache = _CheckCache(file_hash_name, ['.domtblout', '.converted.msa'])
+def compute_domain_and_msa(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
+    file_hash_name = compute_hash_name(hmm_evalue, filter_multi, hmm_file)
+    cache = check_cache(file_hash_name, ['.domtblout', '.converted.msa'])
     domtblout = None
     # converted_refseq_msa_file = None              VARIABLE NOT USED DELETE IF TESTS PASS
     if cache:
@@ -482,9 +482,9 @@ def ComputeDomainAndMsa(hmm_evalue, filter_multi, hmm_file, temp_files, task, me
         if (task and meta):
             task.update_state(meta)  # updating job status
     else:
-        refseq_msa_file = _MakeTemp(temp_files)
-        domtblout = _MakeInCache(file_hash_name + '.domtblout')
-        converted_refseq_msa_file = _MakeInCache(file_hash_name + '.converted.msa')
+        refseq_msa_file = make_temp(temp_files)
+        domtblout = make_in_cache(file_hash_name + '.domtblout')
+        converted_refseq_msa_file = make_in_cache(file_hash_name + '.converted.msa')
         run_process(['hmmsearch', '-o', '/dev/null', '-A', refseq_msa_file,
                      '-E' if filter_multi else '--domE', str(hmm_evalue),
                      '--domtblout', domtblout, '--cpu', CONCURRENCY, hmm_file,
@@ -500,8 +500,8 @@ def ComputeDomainAndMsa(hmm_evalue, filter_multi, hmm_file, temp_files, task, me
     return domtblout, converted_refseq_msa_file
 
 
-def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
-    dom_and_msa = ComputeDomainAndMsa(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta)
+def find_refseq_hits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
+    dom_and_msa = compute_domain_and_msa(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta)
     if not dom_and_msa:  # no refseq hits
         return None, set(), {}  # stop
     domtblout = dom_and_msa[0]
@@ -542,7 +542,7 @@ def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
 
     # Parses MSA file, filtering out sequences that did not meet the cut-off or
     # were multi hits.
-    refseq_seqs_file = _MakeTemp(temp_files)
+    refseq_seqs_file = make_temp(temp_files)
     refseq_ids = set()  # Temp set of gis for gi:taxid dictionary.
     ignore = False
     with open(converted_refseq_msa_file) as in_file:
@@ -572,7 +572,7 @@ def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
         return None, set(), {}
 
     # Filter refseq genes without taxid.
-    filtered_refseq_seqs_file = _MakeTemp(temp_files)
+    filtered_refseq_seqs_file = make_temp(temp_files)
     refseq_hit_ids = set()
     with open(refseq_seqs_file) as in_file:
         with open(filtered_refseq_seqs_file, 'w') as out_file:
@@ -593,7 +593,7 @@ def FindRefseqHits(hmm_evalue, filter_multi, hmm_file, temp_files, task, meta):
     return filtered_refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary
 
 
-def MakeOutputFile(parts, extension='', all_output_files=[]):
+def make_output_file(parts, extension='', all_output_files=[]):
     fd, output_file = tempfile.mkstemp(
         dir=OUTPUT_DIR,
         prefix='%s_' % '_'.join(parts),
@@ -609,7 +609,7 @@ MAX_INPUT_HOURS = 5
 MAX_OUTPUT_HOURS = 24 * 31
 
 
-def CleanUp():
+def clean_up():
     allowed_input_time = time.time() - MAX_INPUT_HOURS * 3600
     for f in os.listdir('input'):
         full = os.path.join('input', f)
@@ -638,7 +638,7 @@ def CleanUp():
     conn.close()
 
 
-def _CombineAnnotationFiles(annotation_files, output_file):
+def combine_annotation_files(annotation_files, output_file):
     with open(output_file, 'w') as f:
         first_file = True
         for annotations_file in annotation_files:
@@ -653,7 +653,7 @@ def _CombineAnnotationFiles(annotation_files, output_file):
             first_file = False
 
 
-def _CombineReadFiles(read_files, output_file):
+def combine_read_files(read_files, output_file):
     seen = set()
     with open(output_file, 'w') as f:
         for reads_file in read_files:
@@ -667,11 +667,11 @@ def _CombineReadFiles(read_files, output_file):
                         f.write(l)
 
 
-def _MakeCountsFiles(output, output_files):
-    raw_counts_filename = MakeOutputFile(['raw_counts'],
+def make_counts_files(output, output_files):
+    raw_counts_filename = make_output_file(['raw_counts'],
                                          extension='.csv',
                                          all_output_files=output_files)
-    normalized_counts_filename = MakeOutputFile(['normalized_counts'],
+    normalized_counts_filename = make_output_file(['normalized_counts'],
                                                 extension='.csv',
                                                 all_output_files=output_files)
     output['raw_counts'] = os.path.basename(raw_counts_filename)
@@ -697,13 +697,13 @@ def _MakeCountsFiles(output, output_files):
                 normalized_counts.writerow([row_name] + normalized)
 
 
-def MakeFullRefSeqIdsFile(temp_files, refseq_hit_ids):
+def make_full_refseq_ids_file(temp_files, refseq_hit_ids):
     refseq_hits_hash = hash.hexhash(refseq_hit_ids)
     ext = '.fullrefseq.ids'
-    cache = _CheckCache(refseq_hits_hash, [ext])
+    cache = check_cache(refseq_hits_hash, [ext])
     if cache:
         return cache[0]
-    refseq_ids_file = _MakeTemp(temp_files)
+    refseq_ids_file = make_temp(temp_files)
     already_added = set()
     with open(refseq_ids_file, 'w') as output_file:
         for refseq_hit_id in refseq_hit_ids:
@@ -711,19 +711,19 @@ def MakeFullRefSeqIdsFile(temp_files, refseq_hit_ids):
             if refseq_hit_id not in already_added:
                 output_file.write('%s\n' % refseq_hit_id)
                 already_added.add(refseq_hit_id)
-    full_refseqs_file = _MakeInCache(refseq_hits_hash + ext)
+    full_refseqs_file = make_in_cache(refseq_hits_hash + ext)
     run_process(['esl-sfetch', '-o', full_refseqs_file, '-f',
                  REFERENCE_DATABASE, refseq_ids_file])
     return full_refseqs_file
 
 
 @app.task(bind=True)
-def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
+def run_pipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
                 usearch_percent_id, do_sequence_classification,
                 do_phylogenetic_classification, force_msa, filter_multi_orf,
                 filter_multi_refseq, transeq, min_coverage, min_alignment,
                 reference_msa, reference_tree, reference_log):
-    return RunPipelineReal(
+    return run_pipeline_real(
         self, RunPipeline.request.id, orf_files, hmm_files,
         hmm_evalue, refseq_hmm_evalue, usearch_percent_id,
         do_sequence_classification, do_phylogenetic_classification,
@@ -732,7 +732,7 @@ def RunPipeline(self, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
         reference_log)
 
 
-def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
+def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                     refseq_hmm_evalue, usearch_percent_id,
                     do_sequence_classification, do_phylogenetic_classification,
                     force_msa, filter_multi_orf, filter_multi_refseq, transeq,
@@ -745,7 +745,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 CONCURRENCY = l.strip()
                 break
     if instance:
-        CleanUp()
+        clean_up()
     # Strange bug: Server hand if this import is at the top of the file. There is
     # likely a cyclic reference problem that is hard to reproduce.
     import ete2
@@ -786,7 +786,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
     for orfs_name, orfs_path in orf_files:
         unique_upload_id = 0
         if orfs_path.startswith('realinput'):
-            new_orfs_path = _MakeTemp(temp_files)
+            new_orfs_path = make_temp(temp_files)
             with open(orfs_path) as input_handle:
                 with open(new_orfs_path, 'w') as output_handle:
                     for l in input_handle:
@@ -810,7 +810,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             print >> sys.stderr, 'Running Transeq.'
         new_orf_files = []
         for orfs_name, orfs_path in orf_files:
-            new_orfs_path = _MakeTemp(temp_files)
+            new_orfs_path = make_temp(temp_files)
             run_process(['transeq', '-frame', '6', '-sequence', orfs_path,
                          '-outseq', new_orfs_path])
             new_orf_files.append((orfs_name, new_orfs_path))
@@ -824,7 +824,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
         analysis_index += 1
         meta['analysis'] = analysis_index
 
-        hmm_family_safe, hmm_description, hmm_length = _GetHMMInfo(
+        hmm_family_safe, hmm_description, hmm_length = get_hmm_info(
             hmm_index, hmm_file, hmm_file_name, temp_files)
         meta['hmm'] = hmm_family_safe
         min_length = int(min_coverage * hmm_length)
@@ -840,7 +840,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             instance.update_state(meta=meta)
         else:
             print >> sys.stderr, 'Running hmmsearch on provided sequences.'
-        (read_files, hmm_hit_files, safe_orf_names, hmm_hit_evalues) = FindOrfHits(
+        (read_files, hmm_hit_files, safe_orf_names, hmm_hit_evalues) = find_orf_hits(
             orf_files, hmm_evalue, min_alignment, filter_multi_orf, hmm_file,
             hmm_family_safe, temp_files, column, instance, meta, output_files)
         meta['total_orfs'] = sum(len(evals) for evals in hmm_hit_evalues)
@@ -861,7 +861,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 rows.append({'total_sequences': total_count, 'name': safe_orf_name})
 
         if reference_msa:
-            (refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary) = UseReferenceHits(
+            (refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary) = use_reference_hits(
                 reference_msa, temp_files)
         else:
             # Runs hmmsearch on refseq.
@@ -870,7 +870,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 instance.update_state(meta=meta)
             else:
                 print >> sys.stderr, 'Running hmmsearch on Reference database.'
-            (refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary) = FindRefseqHits(
+            (refseq_seqs_file, refseq_hit_ids, gi_taxid_dictionary) = find_refseq_hits(
                 refseq_hmm_evalue, filter_multi_refseq, hmm_file, temp_files, instance,
                 meta)
         column['total_reference_sequences'] = len(refseq_hit_ids)
@@ -879,18 +879,18 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             continue
 
         # Combines matching ORF and refseq sequence files.
-        combined_orfs_file = _MakeTemp(temp_files)
+        combined_orfs_file = make_temp(temp_files)
         run_process(['cat'] + [hf for hf in hmm_hit_files if hf],
                     stdout_file=combined_orfs_file)
-        combined_reads_file = _MakeTemp(temp_files)
+        combined_reads_file = make_temp(temp_files)
         run_process(['cat'] + read_files, stdout_file=combined_reads_file)
-        combined_seqs_file = _MakeTemp(temp_files)
+        combined_seqs_file = make_temp(temp_files)
         run_process(['cat', refseq_seqs_file, combined_orfs_file],
                     stdout_file=combined_seqs_file)
         immutable_refseq_hit_ids = frozenset(refseq_hit_ids)
-        full_refseqs_file = MakeFullRefSeqIdsFile(temp_files, immutable_refseq_hit_ids)
+        full_refseqs_file = make_full_refseq_ids_file(temp_files, immutable_refseq_hit_ids)
 
-        fixed_refseqs_file_full = _MakeTemp(temp_files)
+        fixed_refseqs_file_full = make_temp(temp_files)
         with open(full_refseqs_file) as input_file:
             with open(fixed_refseqs_file_full, 'w') as output_file:
                 for l in input_file:
@@ -908,7 +908,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             # USEARCH for closest neighbours.
             closest_neighbours = {}
             if meta['total_orfs'] > 0:
-                blast_output = _MakeTemp(temp_files)
+                blast_output = make_temp(temp_files)
                 run_process(['usearch', '-usearch_global', combined_reads_file, '-db',
                              fixed_refseqs_file_full, '-id', str(usearch_percent_id),
                              '-blast6out', blast_output], task=instance, meta=meta)
@@ -931,16 +931,16 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 instance.update_state(meta=meta)
             else:
                 print >> sys.stderr, 'Running hmmalign.'
-            alignment_file = _MakeTemp(temp_files)
+            alignment_file = make_temp(temp_files)
             run_process(['hmmalign', '-o', alignment_file, hmm_file,
                          combined_seqs_file], task=instance, meta=meta)
             # Converts to FASTA format.
-            converted_alignment_file = _MakeTemp(temp_files)
+            converted_alignment_file = make_temp(temp_files)
             run_process(['esl-reformat', '-o', converted_alignment_file, 'afa',
                          alignment_file])
             # Removes remaining non-match states (ie. replace lower case letters).
             # Also filters out short refseq sequences.
-            fixed_alignment_file = MakeOutputFile([hmm_family_safe, 'msa'],
+            fixed_alignment_file = make_output_file([hmm_family_safe, 'msa'],
                                                   extension='.fa',
                                                   all_output_files=output_files)
             column['msa'] = os.path.basename(fixed_alignment_file)
@@ -981,23 +981,23 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
 
         if do_phylogenetic_classification:
             if reference_msa:
-                refseq_alignment_file = MakeOutputFile([hmm_family_safe, 'refseq',
+                refseq_alignment_file = make_output_file([hmm_family_safe, 'refseq',
                                                         'msa'], extension='.fa',
                                                        all_output_files=output_files)
                 shutil.move(reference_msa, refseq_alignment_file)
                 column['refseq_msa'] = os.path.basename(refseq_alignment_file)
-                tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'],
+                tree_file = make_output_file([hmm_family_safe, 'refseq', 'tree'],
                                            all_output_files=output_files,
                                            extension='.newick')
                 shutil.move(reference_tree, tree_file)
                 column['refseq_tree'] = os.path.basename(tree_file)
-                log_file = MakeOutputFile([hmm_family_safe, 'refseq', 'fastree',
+                log_file = make_output_file([hmm_family_safe, 'refseq', 'fastree',
                                            'log'], all_output_files=output_files,
                                           extension='.txt')
                 shutil.move(reference_log, log_file)
                 column['refseq_log'] = os.path.basename(log_file)
             else:
-                refseq_alignment_file = MakeOutputFile([hmm_family_safe, 'refseq',
+                refseq_alignment_file = make_output_file([hmm_family_safe, 'refseq',
                                                         'msa'], extension='.fa',
                                                        all_output_files=output_files)
                 column['refseq_msa'] = os.path.basename(refseq_alignment_file)
@@ -1019,11 +1019,11 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 else:
                     print >> sys.stderr, 'Running FastTree.'
                 os.environ['OMP_NUM_THREADS'] = CONCURRENCY
-                tree_file = MakeOutputFile([hmm_family_safe, 'refseq', 'tree'],
+                tree_file = make_output_file([hmm_family_safe, 'refseq', 'tree'],
                                            all_output_files=output_files,
                                            extension='.newick')
                 column['refseq_tree'] = os.path.basename(tree_file)
-                log_file = MakeOutputFile([hmm_family_safe, 'refseq', 'fastree',
+                log_file = make_output_file([hmm_family_safe, 'refseq', 'fastree',
                                            'log'], all_output_files=output_files,
                                           extension='.txt')
                 column['refseq_log'] = os.path.basename(log_file)
@@ -1036,20 +1036,20 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
 
             if meta['total_orfs'] > 0:
                 # Create RefPackage for pplacer.
-                package = _MakeTemp(temp_files, make_directory=True)
+                package = make_temp(temp_files, make_directory=True)
                 package_loc = os.path.join(package, 'refpkg')
                 run_process(['taxit', 'create', '-l', 'custom', '-P', package_loc,
                              '--aln-fasta', refseq_alignment_file, '--tree-stats',
                              log_file, '--tree-file', tree_file])
 
                 # Run pplacer.
-                placements_file = _MakeTemp(temp_files, extension='.jplace')
+                placements_file = make_temp(temp_files, extension='.jplace')
                 run_process(['pplacer', '-j', CONCURRENCY, '-c', package_loc, '-o',
                              placements_file, '--groups', '10', fixed_alignment_file],
                             task=instance, meta=meta)
 
                 # Run Guppy to add in the placements to the original tree.
-                tree_file = MakeOutputFile([hmm_family_safe, 'tree'],
+                tree_file = make_output_file([hmm_family_safe, 'tree'],
                                            all_output_files=output_files,
                                            extension='.newick')
                 column['tree'] = os.path.basename(tree_file)
@@ -1081,7 +1081,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             # Reads tree and determines closest refseq hit to each orf.
             tree = ete2.Tree(tree_file)
             # Determines the phylogentic consistency at each internal node.
-            UpdateTreeWithPhyloConsistency(tree, gi_taxid_dictionary, ranks,
+            update_tree_with_phylo_consistency(tree, gi_taxid_dictionary, ranks,
                                            parents)
 
         # Prepares an output list of each ORF and matching target.
@@ -1091,7 +1091,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             cell = column['rows'][orf_file_index]
             if len(hmm_evalues) == 0:
                 continue
-            output_file = MakeOutputFile(
+            output_file = make_output_file(
                 [hmm_family_safe, orfs_name_safe, 'annotations'],
                 all_output_files=output_files, extension='.tsv')
 
@@ -1123,8 +1123,8 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 f.write('\n')
                 orfs_reported = set()
                 for orf, e_val in hmm_evalues.iteritems():
-                    full_orf = _TrimSafeReadName(orf)
-                    aligned_length = _LengthFromName(orf)
+                    full_orf = trim_safe_read_name(orf)
+                    aligned_length = length_from_name(orf)
                     output_row = [orfs_name_safe, hmm_family_safe, orf, e_val,
                                   aligned_length]
                     if do_sequence_classification:
@@ -1135,7 +1135,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                         if target:
                             gi_num = target.split("|")[1]
                             taxid = gi_taxid_dictionary[gi_num]
-                            lineage = GetLineageForHomolog(taxid, parents, name_dictionary,
+                            lineage = get_lineage_for_homolog(taxid, parents, name_dictionary,
                                                            ranks)
                             if not do_phylogenetic_classification:
                                 clade_taxid_counts[taxid] += 1
@@ -1176,13 +1176,13 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                     orfs_reported.add(full_orf)
                 # Creates Krona count files.
                 lineage_files[hmm_family_safe][orf_file_index] = (
-                    _CreateKronaCountFile(temp_files, clade_taxid_counts, parents,
+                    create_krona_count_file(temp_files, clade_taxid_counts, parents,
                                           name_dictionary))
                 # Removes eliminated sequences from raw reads file.
                 cell['sequences_hit'] = len(orfs_reported)
                 reads_file = os.path.join(OUTPUT_DIR, cell['reads_file'])
                 global_read_files.append(cell['reads_file'])
-                old_reads_file = _MakeTemp(temp_files)
+                old_reads_file = make_temp(temp_files)
                 shutil.move(reads_file, old_reads_file)
                 with open(old_reads_file) as input_handle:
                     with open(reads_file, 'w') as output_handle:
@@ -1202,7 +1202,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
 
         # Create merged krona file accross datasets of current HMM analysis.
         if len(orf_files) > 1:
-            _CreateMergedKronaAndAssignLinks(
+            create_merged_krona_and_assign_links(
                 'hmm', hmm_family_safe, safe_orf_names, 'all_datasets',
                 lineage_files[hmm_family_safe], column['rows'], column, temp_files,
                 output_files)
@@ -1237,21 +1237,21 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
         annotation_files = [cell['annotations'] for cell in column['rows']
                             if 'annotations' in cell]
         if len(annotation_files) > 1:
-            combined_output_file = MakeOutputFile([hmm_family_safe,
+            combined_output_file = make_output_file([hmm_family_safe,
                                                    'all_annotations'],
                                                   all_output_files=output_files,
                                                   extension='.tsv')
-            _CombineAnnotationFiles(annotation_files, combined_output_file)
+            combine_annotation_files(annotation_files, combined_output_file)
             column['all_annotations'] = os.path.basename(combined_output_file)
 
         # Concat all read files together.
         read_files = [cell['reads_file'] for cell in column['rows']
                       if 'reads_file' in cell]
         if len(read_files) > 1:
-            combined_read_file = MakeOutputFile([hmm_family_safe, 'all_reads'],
+            combined_read_file = make_output_file([hmm_family_safe, 'all_reads'],
                                                 all_output_files=output_files,
                                                 extension='.fa')
-            _CombineReadFiles(read_files, combined_read_file)
+            combine_read_files(read_files, combined_read_file)
             column['all_reads'] = os.path.basename(combined_read_file)
 
     if len(hmm_files) > 1:
@@ -1262,7 +1262,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                       for col in output['column_order']]
             cells = [output['columns'][col]['rows'][row_index]
                      for col in output['column_order']]
-            _CreateMergedKronaAndAssignLinks(
+            create_merged_krona_and_assign_links(
                 'dataset', row['name'], output['column_order'], 'all_hmms',
                 counts, cells, row, temp_files, output_files)
             lineage_files['*all*'][row_index] = counts[-1]
@@ -1272,11 +1272,11 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 for col in output['column_order']
                 if 'annotations' in output['columns'][col]['rows'][row_index]]
             if len(annotation_files) > 1:
-                combined_output_file = MakeOutputFile([row['name'],
+                combined_output_file = make_output_file([row['name'],
                                                        'all_annotations'],
                                                       all_output_files=output_files,
                                                       extension='.tsv')
-                _CombineAnnotationFiles(annotation_files, combined_output_file)
+                combine_annotation_files(annotation_files, combined_output_file)
                 row['all_annotations'] = os.path.basename(combined_output_file)
             # Creates combined reads file for all HMMs for this dataset.
             read_files = [
@@ -1284,16 +1284,16 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 for col in output['column_order']
                 if 'reads_file' in output['columns'][col]['rows'][row_index]]
             if len(read_files) > 1:
-                combined_read_file = MakeOutputFile([row['name'], 'all_reads'],
+                combined_read_file = make_output_file([row['name'], 'all_reads'],
                                                     all_output_files=output_files,
                                                     extension='.fa')
-                _CombineReadFiles(read_files, combined_read_file)
+                combine_read_files(read_files, combined_read_file)
                 row['all_reads'] = os.path.basename(combined_read_file)
 
         if len(orf_files) > 1:
             # Creates Krona file for combined HMM counts.
             row_names = [row['name'] for row in output['rows']]
-            _CreateMergedKronaAndAssignLinks(
+            create_merged_krona_and_assign_links(
                 'hmm', 'all_hmms', row_names, 'all_datasets',
                 lineage_files['*all*'], output['rows'], output, temp_files,
                 output_files)
@@ -1302,34 +1302,34 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             counts = [lineage_files[col][combined_index]
                       if combined_index < len(lineage_files[col]) else ('', '')
                       for col in output['column_order']]
-            _CreateMergedKronaAndAssignLinks(
+            create_merged_krona_and_assign_links(
                 'dataset', 'all_datasets', output['column_order'], 'all_hmms',
                 counts,
                 [output['columns'][col] for col in output['column_order']], output,
                 temp_files, output_files)
             # Creates combined annotations file for all HMMs for this dataset.
             if len(global_annotation_files) > 1:
-                combined_output_file = MakeOutputFile(['all_annotations'],
+                combined_output_file = make_output_file(['all_annotations'],
                                                       all_output_files=output_files,
                                                       extension='.tsv')
-                _CombineAnnotationFiles(global_annotation_files, combined_output_file)
+                combine_annotation_files(global_annotation_files, combined_output_file)
                 output['all_annotations'] = os.path.basename(combined_output_file)
             # Creates combined reads file for all HMMs for this dataset.
             if len(global_read_files) > 1:
-                combined_read_file = MakeOutputFile(['all_reads'],
+                combined_read_file = make_output_file(['all_reads'],
                                                     all_output_files=output_files,
                                                     extension='.fa')
-                _CombineReadFiles(global_read_files, combined_read_file)
+                combine_read_files(global_read_files, combined_read_file)
                 output['all_reads'] = os.path.basename(combined_read_file)
     elif len(hmm_files) == 1 and len(orf_files) == 1:
         # Create single krona for single HMM + dataset analysis.
         column_name = output['column_order'][0]
         if lineage_files[column_name][0]:
-            krona_file = MakeOutputFile(
+            krona_file = make_output_file(
                 ['krona'], all_output_files=output_files, extension='.html')
             krona_file_base = os.path.basename(krona_file)
             count = lineage_files[column_name][0]
-            _CreateMergedKronaFile([(column_name, count)], krona_file)
+            create_merged_krona_file([(column_name, count)], krona_file)
             output['columns'][column_name]['rows'][0]['hmm_krona'] = (
                 '%s?collapse=false' % krona_file_base)
 
@@ -1337,10 +1337,10 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
         print >> sys.stderr, 'Since there is no hmm hit in ORF, we can\'t continue processing...'
         sys.exit(1)
 
-    _MakeCountsFiles(output, output_files)
+    make_counts_files(output, output_files)
 
     # Zips all output files together.
-    zipped_files_filename = MakeOutputFile(['all_files'], extension='.zip')
+    zipped_files_filename = make_output_file(['all_files'], extension='.zip')
     zipped_files = zipfile.ZipFile(zipped_files_filename, 'w', allowZip64=True)
     output['all_files'] = os.path.basename(zipped_files_filename)
     for file_name in output_files:
