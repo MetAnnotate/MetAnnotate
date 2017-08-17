@@ -1,40 +1,34 @@
 import unittest
-import subprocess
+import hashlib
 import glob
 
 
-class TestEndToEnd(unittest.TestCase):
+class testEndToEnd(unittest.TestCase):
+
+    # Method that returns the md5 hash of a given file
+    def generate_md5(filename):
+        hash_md5 = hashlib.md5()
+        with open(filename, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
 
     # Unit test for validating test outputs from install to test script
     def test_endtoend(self):
-        generated_fa_files = []
+        generated_hash = []
 
         # Fetch the generated fa files and verify that they match reference files
         for filename in glob.glob("../test_output/*.fa"):
             if filename.__contains__("msa") or filename.__contains__("refseq"):
-                generated_fa_files.append(open(filename, 'r'))
+                generated_hash.append(self.generate_md5(filename))
 
-        reference_fa_files = [open("test_constants/rpoB_0_msa_0.fa", 'r'),
-                              open("test_constants/rpoB_0_refseq_msa_1.fa", 'r')]
+        reference_hash = [self.generate_md5("test_constants/rpoB_0_msa_0.fa"),
+                          self.generate_md5("test_constants/rpoB_0_refseq_msa_1.fa")]
 
         # compare the two FA files with reference
-        if len(generated_fa_files) > 0:
-
+        if len(generated_hash) > 0:
             for i in range(0, 2):
-                print 'Comparing reference file: ' + reference_fa_files[i].name
-                temp_string_reference = ''
-                temp_string_generated = ''
-
-                for line in reference_fa_files[i]:
-                    temp_string_reference = temp_string_reference.rstrip('\r\n') + line
-
-                for line in generated_fa_files[i]:
-                    temp_string_generated = temp_string_generated.rstrip('\r\n') + line
-
-                # Get the first 100 chars of each string to improve consistency
-                temp_string_reference = temp_string_reference[:100]
-                temp_string_generated = temp_string_generated[:100]
-                self.assertEqual(temp_string_reference, temp_string_generated)
+                self.assertEqual(generated_hash[0], reference_hash[0])
         else:
             print("Please run test_metannotate.sh and verify that it works before running nosetests.")
 
