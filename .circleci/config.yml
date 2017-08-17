@@ -12,12 +12,18 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
+      # Restore venv dependencies
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "requirements.txt" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
+
+      # Restore non-python dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "base_installation.sh" }}
+            - v1-dependencies-
 
       - run:
           name: Install dependencies
@@ -37,3 +43,8 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
+      - save_cache:
+          paths:
+            - ~/.local/bin/
+            - ~/Metannotate/precompute
+          key: v1-dependencies-{{ checksum "base_installation.sh }}
