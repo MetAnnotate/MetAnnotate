@@ -47,4 +47,4 @@ jobs:
           paths:
             - ~/.local/bin/
             - ~/Metannotate/precompute
-          key: v1-dependencies-{{ checksum "base_installation.sh }}
+          key: v1-dependencies-{{ checksum "base_installation.sh" }}
