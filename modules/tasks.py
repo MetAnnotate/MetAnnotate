@@ -1,4 +1,4 @@
-import cPickle as pickle
+import cPickle as Pickle
 import csv
 import json
 import os
@@ -30,9 +30,9 @@ try:
         for l in f:
             extra_path = l.strip()
             break
-except:
+except IOError as e:
+    print("Cannot find path.txt")
     pass
-    # Figure out what exception is being broadly excepted and specify
 
 os.environ["PATH"] += os.pathsep + extra_path
 
@@ -1063,7 +1063,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
             print >> sys.stderr, 'Running taxonomic classification.'
         # Loads precomputed taxonomy name and id mappings.
         with open('data/taxonomy.pickle') as f:
-            taxonomy_data = pickle.load(f)
+            taxonomy_data = Pickle.load(f)
             # Taxid (int): name (string)
             name_dictionary = taxonomy_data['names']
             # Taxid (int): lineage (list of ints, rightmost being root)
