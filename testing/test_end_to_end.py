@@ -15,13 +15,17 @@ class testEndToEnd(unittest.TestCase):
 
     # Unit test for validating test outputs from install to test script
     def test_endtoend(self):
-        generated_hash = []
+        generated_hash = [2]
 
         # Fetch the generated fa files and verify that they match reference files
         for filename in glob.glob("../test_output/*.fa"):
-            if filename.__contains__("msa") or filename.__contains__("refseq"):
-                print(filename)
-                generated_hash.append(self.generate_md5(filename))
+            if filename.__contains__("0_msa"):
+                print("Comparing " + filename + " to rpoB_0_msa_0.fa")
+                generated_hash[0] = self.generate_md5(filename)
+            if filename.__contains__("refseq"):
+                print("Comparing " + filename + " to rpoB_0_refseq_msa_0.fa")
+                generated_hash[1] = self.generate_md5(filename)
+
 
         reference_hash = [self.generate_md5("test_constants/rpoB_0_msa_0.fa"),
                           self.generate_md5("test_constants/rpoB_0_refseq_msa_1.fa")]
