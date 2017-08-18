@@ -1,8 +1,8 @@
 version: 2
 jobs:
   build:
-	working_directory: ~/repo
-    machine:
+    working_directory: ~/repo
+      machine:
         python:
             version: pyenv 2.7.12
     enabled: true
