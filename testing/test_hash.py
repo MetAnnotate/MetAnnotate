@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+
+"""
+Created by: Metannotate
+
+Description: A simple unittest for testing hash.py module
+
+Requirements:
+"""
+
+# Imports:
 from modules import hash
 import unittest
 
