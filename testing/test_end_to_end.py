@@ -15,7 +15,7 @@ class testEndToEnd(unittest.TestCase):
 
     # Unit test for validating test outputs from install to test script
     def test_endtoend(self):
-        generated_hash = [2]
+        generated_hash = [None] * 2
 
         # Fetch the generated fa files and verify that they match reference files
         for filename in glob.glob("../test_output/*.fa"):
