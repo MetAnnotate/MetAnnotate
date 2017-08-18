@@ -12,33 +12,25 @@ jobs:
     steps:
         - checkout
 
-        # Restore venv dependencies
+        # Restore pip dependencies
         - restore_cache:
             keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-pip-dependencies-{{ checksum "requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - v1-pip-dependencies-
 
-        # Restore non-python dependencies
+        # Restore general dependencies
         - restore_cache:
             keys:
-            - v1-dependencies-{{ checksum "base_installation.sh" }}
-            - v1-dependencies-
+            - v1-general-dependencies-{{ checksum "base_installation.sh" }}
+            - v1-general-dependencies-
 
+        # Install dependencies and application
         - run:
             name: Install dependencies
             command: |
-              virtualenv .venv/bin/activate
               sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
-        - run:
-            name: run tests
-            command: |
-              mkdir -p ~/.local/bin/
-              export TERM=xterm
               ./base_installation.sh
-              ./test_metannotate.sh
-              cd testing
-              nosetests -v
 
         # Cache python dependencies
         - save_cache:
@@ -52,3 +44,13 @@ jobs:
               - ~/circleci/repo/data
               - ~/circleci/.linuxbrew
             key: v1-dependencies-{{ checksum "base_installation.sh" }}
+
+        # Run the tests
+        - run:
+            name: run tests
+            command: |
+              ./test_metannotate.sh
+              cd testing
+              nosetests -v
+
+
