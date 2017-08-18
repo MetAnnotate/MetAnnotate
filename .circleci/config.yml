@@ -49,8 +49,8 @@ jobs:
         - run:
             name: run tests
             command: |
-              ./test_metannotate.sh
               cd testing
               nosetests -v
-
+              cd ..
+              ./test_metannotate_end_to_end.sh
 

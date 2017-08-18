@@ -18,7 +18,7 @@ class HashTesting(unittest.TestCase):
     def test_hash(self):
         """
         Description: Method that tests the methods 'hexhash()' and 'md5hash()' from module hash
-        
+
         :param self: Reference to the HashTesting class
         :return:
 
