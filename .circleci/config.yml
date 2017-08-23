@@ -27,7 +27,7 @@ jobs:
 
         # Install dependencies and application
         - run:
-            name: Install dependencies
+            name: Install Dependencies
             command: |
               sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
               ./base_installation.sh
@@ -45,12 +45,16 @@ jobs:
               - ~/circleci/.linuxbrew
             key: v1-general-dependencies-{{ checksum "base_installation.sh" }}
 
-        # Run the tests
+        # Run the end-to-end test
         - run:
-            name: run tests
+            name: End-to-end Testing
+            command: |
+              ./test_metannotate_end_to_end.sh
+
+        # Run the Unit Tests
+        - run:
+            name: Unit Testing
             command: |
               cd testing
               nosetests -v
-              cd ..
-              ./test_metannotate_end_to_end.sh
 
