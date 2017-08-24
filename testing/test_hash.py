@@ -13,6 +13,10 @@ import unittest
 
 
 class HashTesting(unittest.TestCase):
+    """
+    Description: A unit testing class for testing the hash.py module. Tests the functions 'hexhash' and 'md5hash'.
+    Called by nosetests in circleci's config.yml.
+    """
 
     def test_hash(self):
         """
