@@ -17,6 +17,8 @@ if [ ! `which pip` ] ; then
   # install pip locally
   python get-pip.py --user --ignore-installed
   cd ..
+else
+    echo "\nPip is already installed.\n"
 fi
 
 echo -e "\nInstalling python packages through pip.\n"
@@ -33,6 +35,8 @@ if [ ! `which ktImportText` ] ; then
   ./install.pl --prefix "${HOME}/.local/"
   chmod a+x scripts/*.pl
   cd $metAnnotateDir
+else
+  echo "\nKronaTools is already installed.\n"
 fi
 
 echo -e "\nInstalling Linuxbrew\n"
@@ -41,6 +45,8 @@ if [ ! `which brew` ] ; then
     PATH="$HOME/.linuxbrew/bin:$PATH"
     export MANPATH="$(brew --prefix)/share/man:$MANPATH"
     export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
+else
+    echo "\nLinux brew is already installed.\n"
 fi
 
 brew tap homebrew/science
@@ -61,6 +67,8 @@ if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
   ln -s "$software"/hmmer/binaries/esl-reformat ~/.local/bin/esl-reformat
   ln -s "$software"/hmmer/binaries/esl-sfetch ~/.local/bin/esl-sfetch
   cd $metAnnotateDir
+else
+  echo "\nHMMER & Easel mini-applications already installed.\n"
 fi
 
 echo -e "\nInstalling USEARCH.\n"
@@ -68,6 +76,8 @@ if [ ! `which usearch` ] ; then
   echo "Changing execution permission on usearch"
   chmod a+x "${metAnnotateDir}/included_software/usearch"
   ln -s "${metAnnotateDir}/included_software/usearch" ~/.local/bin/usearch
+else
+  echo "\nUSEARCH already installed.\n"
 fi
 
 echo -e "\nInstalling FastTreeMP.\n"
@@ -77,18 +87,25 @@ if [ ! `which FastTreeMP` ] ; then
   mv FastTreeMP ~/.local/bin/
   chmod a+x ~/.local/bin/FastTreeMP
   cd $metAnnotateDir
+else
+  echo "\nFastTreeMP already installed.\n"
 fi
 
 echo -e "\nInstalling pplacer and guppy.\n"
 if [ ! `which guppy` ] ; then
   cd downloads
   wget "https://github.com/matsen/pplacer/releases/download/v1.1.alpha18/pplacer-linux-v1.1.alpha18-2-gcb55169.zip"
+  echo "\nInstalling unzip.\n"
   if [ ! `which unzip` ]; then
     sudo apt-get -y install unzip
+  else
+    echo "\nUnzip already installed.\n"
   fi
   unzip pplacer*
   cd pplacer* && mv * ~/.local/bin/
   cd $metAnnotateDir
+else
+    echo "\nGuppy already installed.\n"
 fi
 
 echo -e "\nDownloading and indexing taxonomy info.\n"
@@ -100,7 +117,7 @@ if [ ! -e data/taxonomy.pickle ] ; then
   python make_taxonomy_pickle.py
   cd $metAnnotateDir
 else
-    echo "Refseq taxonomy dump already cached."
+    echo "\nRefseq taxonomy dump already cached.\n"
 fi
 
 echo -e "\nDownloading and indexing gi number to taxid mappings.\n"
@@ -110,6 +127,8 @@ if [ ! -e data/gi_taxid_prot.dmp ] ; then
   gunzip gi_taxid_prot.dmp.gz
   mv gi_taxid_prot.dmp ../data/
   cd $metAnnotateDir
+else
+  echo "\nTaxid mappings already cached.\n"
 fi
 
 echo -e "\nInstalling cronjob to clean cache. \n"
