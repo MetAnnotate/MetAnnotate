@@ -36,11 +36,16 @@ if [ ! `which ktImportText` ] ; then
 fi
 
 echo -e "\nInstalling Linuxbrew\n"
-if [ ! `which brew` ] ; then
+if [ ! -d "/home/linuxbrew/.linuxbrew" ] && [ ! -d "~/.linuxbrew" ] ; then
     yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-    PATH="$HOME/.linuxbrew/bin:$PATH"
-    export MANPATH="$(brew --prefix)/share/man:$MANPATH"
-    export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
+fi
+
+echo -e "\nAdding Brew to PATH\n"
+if [ ! `which brew` ] ; then
+    test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$PATH"
+    test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+    test -r ~/.bash_profile && echo 'export PATH="$(brew --prefix)/bin:$PATH"' >>~/.bash_profile
+    echo 'export PATH="$(brew --prefix)/bin:$PATH"' >>~/.profile
 fi
 
 brew tap homebrew/science
