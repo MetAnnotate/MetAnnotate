@@ -18,9 +18,9 @@ cd testing/test_constants
 
 # Get reference hash file checksums
 
-FIRST_HASH=$(md5sum rpoB_0_msa_0.fa)
+FIRST_HASH=$(md5sum rpoB_0_msa_0.fa | cut -d ' ' -f 1)
 
-SECOND_HASH=$(md5sum rpoB_0_refseq_msa_1.fa)
+SECOND_HASH=$(md5sum rpoB_0_refseq_msa_1.fa | cut -d ' ' -f 1)
 
 cd ../..
 
@@ -32,13 +32,13 @@ for entry in $(ls test_output); do
     # Checks if entry is the one we are looking to compare
     if [[ ${entry} == *"0_msa"* && ${entry} == *".fa"* ]]; then
         cd test_output
-        GENERATED_FILES[0]=$(md5sum ${entry} | awk '{ print $1 }')
+        GENERATED_FILES[0]=$(md5sum ${entry} | cut -d ' ' -f 1)
         cd ..
     fi
     # Checks if entry is the one we are looking to compare
     if [[ ${entry} == *"refseq"* && ${entry} == *".fa"* ]]; then
         cd test_output
-        GENERATED_FILES[1]=$(md5sum ${entry} | awk '{ print $1 }')
+        GENERATED_FILES[1]=$(md5sum ${entry} | cut -d ' ' -f 1)
         cd ..
     fi
 
