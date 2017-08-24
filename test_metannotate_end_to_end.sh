@@ -23,26 +23,26 @@ SECOND_HASH=$(md5sum rpoB_0_refseq_msa_1.fa | cut -d ' ' -f 1)
 cd ../..
 
 # Store generated test output hashes in array
-declare -a GENERATED_FILES
+declare -a REGENERATED_FILE_HASHES
 
 for entry in $(ls test_output); do
     # Checks if entry is the one we are looking to compare
     if [[ ${entry} == *"0_msa"* && ${entry} == *".fa"* ]]; then
         cd test_output
-        GENERATED_FILES[0]=$(md5sum ${entry} | cut -d ' ' -f 1)
+        REGENERATED_FILE_HASHES[0]=$(md5sum ${entry} | cut -d ' ' -f 1)
         cd ..
     fi
 
     # Checks if entry is the one we are looking to compare
     if [[ ${entry} == *"refseq"* && ${entry} == *".fa"* ]]; then
         cd test_output
-        GENERATED_FILES[1]=$(md5sum ${entry} | cut -d ' ' -f 1)
+        REGENERATED_FILE_HASHES[1]=$(md5sum ${entry} | cut -d ' ' -f 1)
         cd ..
     fi
 done
 
 # If the hashes match, pass the test.
-if [[ ${GENERATED_FILES[0]} == ${FIRST_HASH} && ${GENERATED_FILES[1]} == ${SECOND_HASH} ]]; then
+if [[ ${REGENERATED_FILE_HASHES[0]} == ${FIRST_HASH} && ${REGENERATED_FILE_HASHES[1]} == ${SECOND_HASH} ]]; then
     echo ${SEPARATOR_TWO}
     echo "Hash matches! Test passes."
     exit 0
