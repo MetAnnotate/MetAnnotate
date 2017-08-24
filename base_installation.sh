@@ -99,6 +99,8 @@ if [ ! -e data/taxonomy.pickle ] ; then
   grep 'scientific name' names.dmp > trimmed.names.dmp
   python make_taxonomy_pickle.py
   cd $metAnnotateDir
+else
+    echo "Refseq taxonomy dump already cached."
 fi
 
 echo -e "\nDownloading and indexing gi number to taxid mappings.\n"
