@@ -6,15 +6,7 @@ Created by: Metannotate Team (2017)
 Description: A shell script that runs a sample test of Metannotate and compares the generated
              output files to verify proper end-to-end functionality of the program.
 
-Requirements: - The following packages:
-                    - build-essential
-                    - python-dev
-                    - curl
-                    - file
-                    - git
-                    - python-setuptools
-                    - ruby
-              - Base installation (sudo -H bash base_installation.sh) of Metannotate
+Requirements: - A full CLI installation of Metannotate
 
 """
 
@@ -26,40 +18,39 @@ cd testing/test_constants
 
 # Get reference hash file checksums
 
-FIRST_HASH=$(md5sum rpoB_0_msa_0.fa | awk '{ print $1 }')
+FIRST_HASH=$(md5sum rpoB_0_msa_0.fa)
 
-SECOND_HASH=$(md5sum rpoB_0_refseq_msa_1.fa | awk '{ print $1 }')
+SECOND_HASH=$(md5sum rpoB_0_refseq_msa_1.fa)
 
-
-cd ..
-cd ..
+cd ../..
 
 # Store generated test output hashes in array
 
 declare -a GENERATED_FILES
 
 for entry in $(ls test_output); do
+    # Checks if entry is the one we are looking to compare
     if [[ ${entry} == *"0_msa"* && ${entry} == *".fa"* ]]; then
         cd test_output
         GENERATED_FILES[0]=$(md5sum ${entry} | awk '{ print $1 }')
         cd ..
-
     fi
+    # Checks if entry is the one we are looking to compare
     if [[ ${entry} == *"refseq"* && ${entry} == *".fa"* ]]; then
         cd test_output
         GENERATED_FILES[1]=$(md5sum ${entry} | awk '{ print $1 }')
         cd ..
     fi
+
 done
 
-# Compare hashes and if there is a match exit 0 else exit 1
-
+# If the hashes match, pass the test.
 if [[ ${GENERATED_FILES[0]} == ${FIRST_HASH} && ${GENERATED_FILES[1]} == ${SECOND_HASH} ]]; then
     echo ${SEPARATOR_TWO}
-    echo "Hash matches! Exit code: 0"
+    echo "Hash matches! Test passes."
     exit 0
 else
     echo ${SEPARATOR_TWO}
-    echo "Hash mismatch! Exit code: 1"
+    echo "Hash mismatch! Test fails."
     exit 1
 fi
