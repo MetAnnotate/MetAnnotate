@@ -7,9 +7,9 @@ Description: A shell script that runs a sample test of Metannotate and compares 
              output files to verify proper end-to-end functionality of the program.
 
 Requirements: - A full CLI installation of Metannotate
-
 """
 
+echo "Running Metannotate..."
 python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
 echo "Verifying outputs..."
@@ -17,15 +17,12 @@ echo "Verifying outputs..."
 cd testing/test_constants
 
 # Get reference hash file checksums
-
 FIRST_HASH=$(md5sum rpoB_0_msa_0.fa | cut -d ' ' -f 1)
-
 SECOND_HASH=$(md5sum rpoB_0_refseq_msa_1.fa | cut -d ' ' -f 1)
 
 cd ../..
 
 # Store generated test output hashes in array
-
 declare -a GENERATED_FILES
 
 for entry in $(ls test_output); do
@@ -35,13 +32,13 @@ for entry in $(ls test_output); do
         GENERATED_FILES[0]=$(md5sum ${entry} | cut -d ' ' -f 1)
         cd ..
     fi
+
     # Checks if entry is the one we are looking to compare
     if [[ ${entry} == *"refseq"* && ${entry} == *".fa"* ]]; then
         cd test_output
         GENERATED_FILES[1]=$(md5sum ${entry} | cut -d ' ' -f 1)
         cd ..
     fi
-
 done
 
 # If the hashes match, pass the test.
