@@ -41,12 +41,12 @@ fi
 
 echo -e "\nInstalling Linuxbrew\n"
 if [ ! `which brew` ] ; then
-    yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-    PATH="$HOME/.linuxbrew/bin:$PATH"
-    export MANPATH="$(brew --prefix)/share/man:$MANPATH"
-    export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
+  yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+  PATH="$HOME/.linuxbrew/bin:$PATH"
+  export MANPATH="$(brew --prefix)/share/man:$MANPATH"
+  export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
 else
-    echo "\nLinux brew is already installed.\n"
+  echo "\nLinux brew is already installed.\n"
 fi
 
 brew tap homebrew/science
