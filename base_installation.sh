@@ -42,25 +42,6 @@ fi
 # Install linuxbrew and dependencies
 ./install_brewed_dependancies.sh
 
-echo -e "\nInstalling HMMER & Easel mini-applications.\n"
-if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
-  cd downloads
-  wget "http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz" #updated address here
-  tar --no-same-owner -xzf hmmer-3.1b2-linux-intel-x86_64.tar.gz
-  cd hmmer*
-  ./configure
-  make
-  cp -R . "$software"/hmmer/
-  ln -s "$software"/hmmer/binaries/hmmstat ~/.local/bin/hmmstat
-  ln -s "$software"/hmmer/binaries/hmmsearch ~/.local/bin/hmmsearch
-  ln -s "$software"/hmmer/binaries/hmmalign ~/.local/bin/hmmalign
-  ln -s "$software"/hmmer/binaries/esl-reformat ~/.local/bin/esl-reformat
-  ln -s "$software"/hmmer/binaries/esl-sfetch ~/.local/bin/esl-sfetch
-  cd $metAnnotateDir
-else
-  echo "\nHMMER & Easel mini-applications already installed.\n"
-fi
-
 echo -e "\nInstalling USEARCH.\n"
 if [ ! `which usearch` ] ; then
   echo "Changing execution permission on usearch"

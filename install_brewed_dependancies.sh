@@ -23,5 +23,8 @@ else
 fi
 
 brew tap homebrew/science
+brew tap Metannotate/homebrew-metannotate
 brew install emboss --without-x
 brew install fasttree
+brew install hmmer
+brew install easel
