@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-"""
-Created by: Metannotate Team (2017)
-
-Description: A shell script that runs a sample test of Metannotate and compares the generated
-             output files to verify proper end-to-end functionality of the program.
-
-Requirements: - A full CLI installation of Metannotate
-"""
+# ======================================================================================================================
+# Created by: Metannotate Team (2017)
+#
+# Description: A shell script that runs a sample test of Metannotate and compares the generated
+#              output files to verify proper end-to-end functionality of the program.
+#
+# Requirements: - A full CLI installation of Metannotate
+# ======================================================================================================================
 
 echo "Running Metannotate..."
 python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
