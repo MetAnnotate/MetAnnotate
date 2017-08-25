@@ -70,17 +70,6 @@ else
   echo "\nUSEARCH already installed.\n"
 fi
 
-echo -e "\nInstalling FastTreeMP.\n"
-if [ ! `which FastTreeMP` ] ; then
-  cd downloads
-  wget "http://www.microbesonline.org/fasttree/FastTreeMP"
-  mv FastTreeMP ~/.local/bin/
-  chmod a+x ~/.local/bin/FastTreeMP
-  cd $metAnnotateDir
-else
-  echo "\nFastTreeMP already installed.\n"
-fi
-
 echo -e "\nInstalling pplacer and guppy.\n"
 if [ ! `which guppy` ] ; then
   cd downloads

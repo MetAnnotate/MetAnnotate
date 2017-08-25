@@ -24,3 +24,4 @@ fi
 
 brew tap homebrew/science
 brew install emboss --without-x
+brew install fasttree
