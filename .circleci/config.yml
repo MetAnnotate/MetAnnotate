@@ -36,7 +36,7 @@ jobs:
             name: Install Dependencies
             command: |
               sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
-              /usr/bin/env bash -eo pipefail ./base_installation.sh
+              ./base_installation.sh
 
         # Cache python dependencies
         - save_cache:
@@ -67,7 +67,7 @@ jobs:
         - run:
             name: End-to-end Testing
             command: |
-              /usr/bin/env bash -eo pipefail ./test_metannotate_end_to_end.sh
+             ./test_metannotate_end_to_end.sh
 
 
 

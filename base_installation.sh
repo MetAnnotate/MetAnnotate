@@ -41,7 +41,7 @@ fi
 
 echo -e "\nInstalling Brew and dependencies via ./install_brewed_dependencies.sh\n"
 # Install linuxbrew and dependencies
-/usr/bin/env bash -eo pipefail ./install_brewed_dependencies.sh
+./install_brewed_dependencies.sh
 
 echo -e "\nInstalling USEARCH.\n"
 if [ ! `which usearch` ] ; then
