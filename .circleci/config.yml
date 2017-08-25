@@ -16,8 +16,14 @@ jobs:
         - restore_cache:
             keys:
             - v1-pip-dependencies-{{ checksum "requirements.txt" }}
-            # fallback to using the latest cache if no exact match is found
+            # fallback to using the latest cache if no exact match is found.
             - v1-pip-dependencies-
+
+        # Restore brew dependencies
+        - restore_cache:
+            keys:
+            - v1-brew-dependencies-{{ checksum "install_brewed_dependancies.sh" }}
+            - v1-brew-dependencies-
 
         # Restore general dependencies
         - restore_cache:
@@ -25,7 +31,7 @@ jobs:
             - v1-general-dependencies-{{ checksum "base_installation.sh" }}
             - v1-general-dependencies-
 
-        # Install dependencies and application
+        # Install dependencies and applications
         - run:
             name: Install Dependencies
             command: |
@@ -41,8 +47,13 @@ jobs:
         # Cache all other dependencies and data
         - save_cache:
             paths:
-              - ~/repo/data
               - ~/.linuxbrew
+            key: v1-brew-dependencies-{{ checksum "install_brewed_dependancies.sh" }}
+
+        # Cache all other dependencies and data
+        - save_cache:
+            paths:
+              - ~/repo/data
             key: v1-general-dependencies-{{ checksum "base_installation.sh" }}
 
         # Run the Unit Tests
