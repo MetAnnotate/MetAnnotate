@@ -39,6 +39,7 @@ else
   echo "\nKronaTools is already installed.\n"
 fi
 
+echo -e "\nInstalling Brew and dependencies via ./install_brewed_dependancies.sh\n"
 # Install linuxbrew and dependencies
 ./install_brewed_dependancies.sh
 
