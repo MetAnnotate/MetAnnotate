@@ -22,7 +22,7 @@ jobs:
         # Restore brew dependencies
         - restore_cache:
             keys:
-            - v1-brew-dependencies-{{ checksum "install_brewed_dependancies.sh" }}
+            - v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
             - v1-brew-dependencies-
 
         # Restore general dependencies
@@ -48,7 +48,7 @@ jobs:
         - save_cache:
             paths:
               - ~/.linuxbrew
-            key: v1-brew-dependencies-{{ checksum "install_brewed_dependancies.sh" }}
+            key: v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
 
         # Cache all other dependencies and data
         - save_cache:
