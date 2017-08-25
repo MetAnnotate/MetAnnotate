@@ -41,8 +41,8 @@ jobs:
         # Cache all other dependencies and data
         - save_cache:
             paths:
-              - ~/circleci/repo/data
-              - ~/circleci/.linuxbrew
+              - ~/repo/data
+              - ~/.linuxbrew
             key: v1-general-dependencies-{{ checksum "base_installation.sh" }}
 
         # Run the Unit Tests
