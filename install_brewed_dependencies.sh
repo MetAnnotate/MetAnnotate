@@ -26,6 +26,7 @@ brew tap homebrew/science
 brew tap Metannotate/homebrew-metannotate
 
 brew update
+brew install gcc
 
 brew install emboss --without-x
 brew install fasttree
