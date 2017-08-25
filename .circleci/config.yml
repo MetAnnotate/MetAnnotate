@@ -69,4 +69,4 @@ jobs:
             name: End-to-end Testing
             command: |
               export PATH="$HOME/.linuxbrew/bin:$PATH"
-              ./test_metannotate_end_to_end.sh
+              /usr/bin/env bash -eo pipefail ./test_metannotate_end_to_end.sh
