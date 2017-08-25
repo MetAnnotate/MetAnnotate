@@ -39,9 +39,9 @@ else
   echo "\nKronaTools is already installed.\n"
 fi
 
-echo -e "\nInstalling Brew and dependencies via ./install_brewed_dependancies.sh\n"
+echo -e "\nInstalling Brew and dependencies via ./install_brewed_dependencies.sh\n"
 # Install linuxbrew and dependencies
-./install_brewed_dependancies.sh
+./install_brewed_dependencies.sh
 
 echo -e "\nInstalling USEARCH.\n"
 if [ ! `which usearch` ] ; then

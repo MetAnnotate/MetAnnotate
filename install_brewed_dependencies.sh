@@ -24,6 +24,9 @@ fi
 
 brew tap homebrew/science
 brew tap Metannotate/homebrew-metannotate
+
+brew update
+
 brew install emboss --without-x
 brew install fasttree
 brew install hmmer
