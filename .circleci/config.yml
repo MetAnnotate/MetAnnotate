@@ -60,6 +60,7 @@ jobs:
         - run:
             name: Unit Testing
             command: |
+              export PATH="$HOME/.linuxbrew/bin:$PATH"
               cd testing
               nosetests -v
 
@@ -67,7 +68,5 @@ jobs:
         - run:
             name: End-to-end Testing
             command: |
-             ./test_metannotate_end_to_end.sh
-
-
-
+              export PATH="$HOME/.linuxbrew/bin:$PATH"
+              ./test_metannotate_end_to_end.sh
