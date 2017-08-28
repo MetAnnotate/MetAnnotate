@@ -19,7 +19,7 @@ jobs:
             # fallback to using the latest cache if no exact match is found.
             - v1-pip-dependencies-
 
-        # Restore brew dependencies
+        # Restore homebrew dependencies
         - restore_cache:
             keys:
             - v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
@@ -44,7 +44,7 @@ jobs:
               - ~/.local/lib/python2.7
             key: v1-pip-dependencies-{{ checksum "requirements.txt" }}
 
-        # Cache all other dependencies and data
+        # Cache homebrew dependencies
         - save_cache:
             paths:
               - ~/.linuxbrew
