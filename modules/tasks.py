@@ -991,7 +991,7 @@ def RunPipelineReal(instance, task_id, orf_files, hmm_files, hmm_evalue,
                                    'log'], all_output_files=output_files,
                                    extension='.txt')
         column['refseq_log'] = os.path.basename(log_file)
-        args = ['FastTreeMP','-out', tree_file, '-log', log_file, '-mlnni',
+        args = ['FastTree','-out', tree_file, '-log', log_file, '-mlnni',
                 '4']
         if total_refseqs >= 50000:
           args += ['-fastest']

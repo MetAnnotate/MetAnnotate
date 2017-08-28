@@ -39,50 +39,9 @@ else
   echo "\nKronaTools is already installed.\n"
 fi
 
-
-# The two possible paths to linuxbrew.
-BREW_PATH_ONE=~/.linuxbrew
-BREW_PATH_TWO=/home/linuxbrew/.linuxbrew
-
-echo -e "\nInstalling Linuxbrew\n"
-if [ ! -d "$BREW_PATH_ONE" ] && [ ! -d "$BREW_PATH_TWO" ] ; then
-    yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-else
-  echo "\nLinux brew is already installed.\n"
-fi
-
-echo -e "\nAttempting to add Brew to PATH\n"
-if [ ! `which brew` ] ; then
-    echo -e "\nAdding Brew to PATH\n"
-    test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$PATH"
-    test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-    test -r ~/.bash_profile && echo 'export PATH="$(brew --prefix)/bin:$PATH"' >>~/.bash_profile
-    echo 'export PATH="$(brew --prefix)/bin:$PATH"' >>~/.profile
-else
-  echo "\nLinux brew is already in the PATH.\n"
-fi
-
-brew tap homebrew/science
-brew install emboss --without-x
-
-echo -e "\nInstalling HMMER & Easel mini-applications.\n"
-if [ ! `which hmmsearch` ] | [ ! `which esl-sfetch` ] ; then
-  cd downloads
-  wget "http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz" #updated address here
-  tar --no-same-owner -xzf hmmer-3.1b2-linux-intel-x86_64.tar.gz
-  cd hmmer*
-  ./configure
-  make
-  cp -R . "$software"/hmmer/
-  ln -s "$software"/hmmer/binaries/hmmstat ~/.local/bin/hmmstat
-  ln -s "$software"/hmmer/binaries/hmmsearch ~/.local/bin/hmmsearch
-  ln -s "$software"/hmmer/binaries/hmmalign ~/.local/bin/hmmalign
-  ln -s "$software"/hmmer/binaries/esl-reformat ~/.local/bin/esl-reformat
-  ln -s "$software"/hmmer/binaries/esl-sfetch ~/.local/bin/esl-sfetch
-  cd $metAnnotateDir
-else
-  echo "\nHMMER & Easel mini-applications already installed.\n"
-fi
+echo -e "\nInstalling Brew and dependencies via ./install_brewed_dependencies.sh\n"
+# Install linuxbrew and dependencies
+./install_brewed_dependencies.sh
 
 echo -e "\nInstalling USEARCH.\n"
 if [ ! `which usearch` ] ; then
@@ -91,17 +50,6 @@ if [ ! `which usearch` ] ; then
   ln -s "${metAnnotateDir}/included_software/usearch" ~/.local/bin/usearch
 else
   echo "\nUSEARCH already installed.\n"
-fi
-
-echo -e "\nInstalling FastTreeMP.\n"
-if [ ! `which FastTreeMP` ] ; then
-  cd downloads
-  wget "http://www.microbesonline.org/fasttree/FastTreeMP"
-  mv FastTreeMP ~/.local/bin/
-  chmod a+x ~/.local/bin/FastTreeMP
-  cd $metAnnotateDir
-else
-  echo "\nFastTreeMP already installed.\n"
 fi
 
 echo -e "\nInstalling pplacer and guppy.\n"
