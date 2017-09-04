@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# ======================================================================================================================
+# Created by: Metannotate Team (2017)
+#
+# Description: A shell script for installing dependencies via Linux Brew.
+#
+# Requirements: - Linux Brew
+# ======================================================================================================================
+
 # The two possible paths to linuxbrew.
 BREW_PATH_ONE=~/.linuxbrew
 BREW_PATH_TWO=/home/linuxbrew/.linuxbrew
