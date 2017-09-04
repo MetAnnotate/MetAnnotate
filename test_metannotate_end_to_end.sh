@@ -43,11 +43,9 @@ done
 
 # If the hashes match, pass the test.
 if [[ ${REGENERATED_FILE_HASHES[0]} == ${FIRST_HASH} && ${REGENERATED_FILE_HASHES[1]} == ${SECOND_HASH} ]]; then
-    echo ${SEPARATOR_TWO}
     echo "Hash matches! Test passes."
     exit 0
 else
-    echo ${SEPARATOR_TWO}
     echo "Hash mismatch! Test fails."
     exit 1
 fi
