@@ -19,6 +19,7 @@ if len(rows) == 0:
 
 result = json.loads(rows[0][0])
 
+
 def SecureFiles(data):
   for k, v in (data.items() if isinstance(data, dict) else enumerate(data)):
     if isinstance(v, dict) or isinstance(v, list):

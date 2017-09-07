@@ -1,53 +1,72 @@
-# Python CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-python/ for more details
-#
 version: 2
-machine:
-  python:
-    version: pypy-2.7.1
 jobs:
   build:
-    docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:2.7
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
 
     working_directory: ~/repo
 
+    machine:
+      python:
+        version: pyenv 2.7.12
+      enabled: true
+
     steps:
-      - checkout
+        - checkout
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+        # Restore pip dependencies
+        - restore_cache:
+            keys:
+            - v1-pip-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found.
+            - v1-pip-dependencies-
 
-      - run:
-          name: install dependencies
-          command: |
-            virtualenv .venv/bin/activate
-            sudo pip install -r requirements.txt
+        # Restore homebrew dependencies
+        - restore_cache:
+            keys:
+            - v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
+            - v1-brew-dependencies-
 
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
-        
-      # run tests!
-      - run:
-          name: run tests
-          command: |
-            sudo -H python test_main.py
+        # Restore general dependencies
+        - restore_cache:
+            keys:
+            - v1-general-dependencies-{{ checksum "base_installation.sh" }}
+            - v1-general-dependencies-
 
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
-          
+        # Install dependencies and applications
+        - run:
+            name: Install Dependencies
+            command: |
+              sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
+              ./base_installation.sh
+
+        # Cache python dependencies
+        - save_cache:
+            paths:
+              - ~/.local/lib/python2.7
+            key: v1-pip-dependencies-{{ checksum "requirements.txt" }}
+
+        # Cache homebrew dependencies
+        - save_cache:
+            paths:
+              - ~/.linuxbrew
+            key: v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
+
+        # Cache all other dependencies and data
+        - save_cache:
+            paths:
+              - ~/repo/data
+            key: v1-general-dependencies-{{ checksum "base_installation.sh" }}
+
+        # Run the Unit Tests
+        - run:
+            name: Unit Testing
+            command: |
+              export PATH="$HOME/.linuxbrew/bin:$PATH"
+              cd testing
+              nosetests -v
+
+        # Run the end-to-end test
+        - run:
+            name: End-to-end Testing
+            command: |
+              export PATH="$HOME/.linuxbrew/bin:$PATH"
+              /usr/bin/env bash -eo pipefail ./test_metannotate_end_to_end.sh

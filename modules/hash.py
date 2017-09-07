@@ -3,7 +3,7 @@ import hashlib
 
 
 # give the name of file, return md5 digest
-def md5hash(file,buf_size=65536):
+def md5hash(file, buf_size=65536):
     # buf_size is totally arbitrary, change for your app!
     md5 = hashlib.md5()
 
