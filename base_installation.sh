@@ -18,7 +18,7 @@ if [ ! `which pip` ] ; then
   python get-pip.py --user --ignore-installed
   cd ..
 else
-    echo "\nPip is already installed.\n"
+    echo -e "\nPip is already installed.\n"
 fi
 
 echo -e "\nInstalling python packages through pip.\n"
@@ -36,7 +36,7 @@ if [ ! `which ktImportText` ] ; then
   chmod a+x scripts/*.pl
   cd $metAnnotateDir
 else
-  echo "\nKronaTools is already installed.\n"
+  echo -e "\nKronaTools is already installed.\n"
 fi
 
 echo -e "\nInstalling Brew and dependencies via ./install_brewed_dependencies.sh\n"
@@ -49,24 +49,24 @@ if [ ! `which usearch` ] ; then
   chmod a+x "${metAnnotateDir}/included_software/usearch"
   ln -s "${metAnnotateDir}/included_software/usearch" ~/.local/bin/usearch
 else
-  echo "\nUSEARCH already installed.\n"
+  echo -e "\nUSEARCH already installed.\n"
 fi
 
 echo -e "\nInstalling pplacer and guppy.\n"
 if [ ! `which guppy` ] ; then
   cd downloads
   wget "https://github.com/matsen/pplacer/releases/download/v1.1.alpha18/pplacer-linux-v1.1.alpha18-2-gcb55169.zip"
-  echo "\nInstalling unzip.\n"
+  echo -e "\nInstalling unzip.\n"
   if [ ! `which unzip` ]; then
     sudo apt-get -y install unzip
   else
-    echo "\nUnzip already installed.\n"
+    echo -e  "\nUnzip already installed.\n"
   fi
   unzip pplacer*
   cd pplacer* && mv * ~/.local/bin/
   cd $metAnnotateDir
 else
-    echo "\nGuppy already installed.\n"
+    echo -e "\nGuppy already installed.\n"
 fi
 
 echo -e "\nDownloading and indexing taxonomy info.\n"
@@ -78,7 +78,7 @@ if [ ! -e data/taxonomy.pickle ] ; then
   python make_taxonomy_pickle.py
   cd $metAnnotateDir
 else
-    echo "\nRefseq taxonomy dump already cached.\n"
+    echo -e "\nRefseq taxonomy dump already cached.\n"
 fi
 
 echo -e "\nDownloading and indexing gi number to taxid mappings.\n"
@@ -89,7 +89,7 @@ if [ ! -e data/gi_taxid_prot.dmp ] ; then
   mv gi_taxid_prot.dmp ../data/
   cd $metAnnotateDir
 else
-  echo "\nTaxid mappings already cached.\n"
+  echo -e "\nTaxid mappings already cached.\n"
 fi
 
 echo -e "\nInstalling cronjob to clean cache. \n"
