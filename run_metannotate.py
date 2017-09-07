@@ -189,7 +189,7 @@ def main(argv):
   tasks.OUTPUT_DIR = output
   tasks.TMP_DIR = tmp
   tasks.REFERENCE_DATABASE = reference_database
-  tasks.RunPipelineReal(
+  tasks.run_pipeline_real(
       None, -1, orf_files, hmm_files, hmm_evalue, refseq_hmm_evalue,
       usearch_percent_id, do_sequence_classification,
       do_phylogenetic_classification, force_msa, filter_multi_orf,
