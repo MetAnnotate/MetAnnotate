@@ -1009,8 +1009,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
             # Reads tree and determines closest refseq hit to each orf.
             tree = ete2.Tree(tree_file)
             # Determines the phylogentic consistency at each internal node.
-            taxonomy.update_tree_with_phylo_consistency(tree, gi_taxid_dictionary, taxonomy_name_mappings.ranks,
-                                                        taxonomy_name_mappings.parents)
+            taxonomy.update_tree_with_phylo_consistency(tree, gi_taxid_dictionary, taxonomy_name_mappings['ranks'],
+                                                        taxonomy_name_mappings['parents'])
 
         # Prepares an output list of each ORF and matching target.
         orf_file_index = -1
