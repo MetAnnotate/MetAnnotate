@@ -4,8 +4,8 @@
 # Description: A module containing taxonomy related functions
 # ======================================================================================================================
 
-from modules import tasks
 
+from collections import defaultdict, Counter
 
 LINEAGE_LEVELS = ('species', 'genus', 'family', 'order', 'class', 'phylum',
                   'superkingdom')
@@ -48,7 +48,7 @@ def choose_representatives(node):
 
 
 def update_tree_with_phylo_consistency(node, taxid_dictionary, ranks, parents):
-    node.phylogeny = tasks.defaultdict(lambda: tasks.Counter())
+    node.phylogeny = defaultdict(lambda: Counter())
     if node.is_leaf():
         if node.name and node.name.startswith('gi|'):
             gi_num = node.name.split("|")[1]
