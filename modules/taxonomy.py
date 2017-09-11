@@ -1,11 +1,12 @@
 # ======================================================================================================================
 # Created by: Metannotate Team (2017)
 #
-# Description: A module containing taxonomy related functions
+# Description: Contains functions for traversing taxonomy trees in order to assign taxonomies to HMM hits.
 # ======================================================================================================================
 
 
 from collections import defaultdict, Counter
+import cPickle as Pickle
 
 LINEAGE_LEVELS = ('species', 'genus', 'family', 'order', 'class', 'phylum',
                   'superkingdom')
@@ -65,3 +66,16 @@ def update_tree_with_phylo_consistency(node, taxid_dictionary, ranks, parents):
             choose_representatives(child)
     if node.is_root():
         choose_representatives(node)
+
+
+# Code for getting precomputed taxonomy information
+def get_taxonomy_names_id():
+    with open('data/taxonomy.pickle') as f:
+        taxonomy_data = Pickle.load(f)
+        # Taxid (int): name (string)
+        name_dictionary = taxonomy_data['names']
+        # Taxid (int): lineage (list of ints, rightmost being root)
+        parents = taxonomy_data['parents']
+        # Taxid (int): rank (string)
+        ranks = taxonomy_data['ranks']
+        return {"name_dictionary": name_dictionary, "parents": parents, "ranks": ranks}
