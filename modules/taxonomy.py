@@ -1,7 +1,7 @@
 # ======================================================================================================================
 # Created by: Metannotate Team (2017)
 #
-# Description: A module containing taxonomy related functions
+# Description: Contains functions for traversing taxonomy trees in order to assign taxonomies to HMM hits.
 # ======================================================================================================================
 
 
