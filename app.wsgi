@@ -727,7 +727,6 @@ if len(sys.argv) > 1 and sys.argv[1] == 'local':
             os.kill(pid, signal.SIGKILL)
             print 'Previous celery process killed.'
 
-
     # Kill celery processes at exit.
     def clean_up():
         if celery_process:

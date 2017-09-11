@@ -15,7 +15,7 @@ from collections import defaultdict, Counter
 
 import celery
 
-from modules import hash
+from modules import hash, taxonomy
 
 CONCURRENCY = '2'
 CONCURRENCY_SPECIFIED = False
@@ -65,66 +65,6 @@ def run_process(args, stdout_file=None, meta=None, task=None):
         raise Exception('Command failed: %s', ' '.join(args))
 
 
-def get_lineage(taxid, parents):
-    lineage = []
-    current = taxid
-    while current != 1 and current in parents:
-        lineage.append(current)
-        current = parents[current]
-    return lineage
-
-
-def get_lineage_names(taxid, parents, name_dictionary):
-    lineage = get_lineage(taxid, parents)
-    return [name_dictionary[taxid] for taxid in lineage]
-
-
-LINEAGE_LEVELS = ('species', 'genus', 'family', 'order', 'class', 'phylum',
-                  'superkingdom')
-
-
-def get_lineage_for_homolog(taxid, parents, name_dictionary, ranks):
-    lineage = get_lineage(taxid, parents)
-    lineage = {ranks[l]: name_dictionary[l] for l in lineage}
-    final_lineage = []
-    best = 'unclassified'
-    for rank in LINEAGE_LEVELS:
-        final_lineage.append(lineage[rank] if rank in lineage else best)
-        best = final_lineage[-1]
-    return final_lineage
-
-
-def choose_representatives(node):
-    new_phylogeny = {}
-    for rank, counts in node.phylogeny.items():
-        new_phylogeny[rank] = counts.most_common(1)[0]
-    if len(new_phylogeny) == 0:
-        node.phylogeny = {}
-        return
-    max_count = float(max(common[1] for common in new_phylogeny.values()))
-    node.phylogeny = {k: (v[0], v[1] / max_count) for k, v in new_phylogeny.items()}
-
-
-def update_tree_with_phylo_consistency(node, taxid_dictionary, ranks, parents):
-    node.phylogeny = defaultdict(lambda: Counter())
-    if node.is_leaf():
-        if node.name and node.name.startswith('gi|'):
-            gi_num = node.name.split("|")[1]
-            taxid = taxid_dictionary[gi_num]
-            lineage = get_lineage(taxid, parents)
-            for taxid in lineage:
-                rank = ranks[taxid]
-                node.phylogeny[rank][taxid] = 1
-    else:
-        for child in node.children:
-            update_tree_with_phylo_consistency(child, taxid_dictionary, ranks, parents)
-            for rank, counts in child.phylogeny.iteritems():
-                node.phylogeny[rank].update(counts)
-            choose_representatives(child)
-    if node.is_root():
-        choose_representatives(node)
-
-
 # make temp file in TMP_DIR and push it to `all_temp` list,
 # so that we can clean up temp files later
 # return the name of the temp file made
@@ -170,7 +110,7 @@ def create_krona_count_file(temp_files, counts, parents, name_dictionary):
                 f.write(str(count))
                 f.write('\n')
                 continue
-            lineage = reversed(get_lineage_names(taxid, parents, name_dictionary))
+            lineage = reversed(taxonomy.get_lineage_names(taxid, parents, name_dictionary))
             lineage = list(lineage)
             lineage.insert(0, str(count))
             f.write('\t'.join(lineage))
@@ -1076,8 +1016,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
             # Reads tree and determines closest refseq hit to each orf.
             tree = ete2.Tree(tree_file)
             # Determines the phylogentic consistency at each internal node.
-            update_tree_with_phylo_consistency(tree, gi_taxid_dictionary, ranks,
-                                               parents)
+            taxonomy.update_tree_with_phylo_consistency(tree, gi_taxid_dictionary, ranks,
+                                                        parents)
 
         # Prepares an output list of each ORF and matching target.
         orf_file_index = -1
@@ -1108,9 +1048,9 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 if do_sequence_classification:
                     title_row += ['Closest Homolog', '%id of Closest Homolog']
                     title_row += ['Closest Homolog %s' % rank.capitalize()
-                                  for rank in LINEAGE_LEVELS]
+                                  for rank in taxonomy.LINEAGE_LEVELS]
                 if do_phylogenetic_classification:
-                    title_row += [col for rank in LINEAGE_LEVELS
+                    title_row += [col for rank in taxonomy.LINEAGE_LEVELS
                                   for col in ('Representative %s' % rank.capitalize(),
                                               '%s Proportion' % rank.capitalize())]
                     title_row += ['Best Representative', 'Representative Proportion']
@@ -1130,12 +1070,12 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                         if target:
                             gi_num = target.split("|")[1]
                             taxid = gi_taxid_dictionary[gi_num]
-                            lineage = get_lineage_for_homolog(taxid, parents, name_dictionary,
-                                                              ranks)
+                            lineage = taxonomy.get_lineage_for_homolog(taxid, parents, name_dictionary,
+                                                                       ranks)
                             if not do_phylogenetic_classification:
                                 clade_taxid_counts[taxid] += 1
                         else:
-                            lineage = ['unclassified'] * len(LINEAGE_LEVELS)
+                            lineage = ['unclassified'] * len(taxonomy.LINEAGE_LEVELS)
                             if not do_phylogenetic_classification:
                                 clade_taxid_counts[None] += 1
                         output_row += [target, percent_id] + lineage
@@ -1147,7 +1087,7 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                         last_proportion = ''
                         # Best phyloigentic rank representatives and proportions.
                         phylogeny = clade_representatives[orf]
-                        for rank in LINEAGE_LEVELS:
+                        for rank in taxonomy.LINEAGE_LEVELS:
                             if rank in phylogeny and phylogeny[rank][0] in name_dictionary:
                                 name = name_dictionary[phylogeny[rank][0]]
                                 proportion = '%.2f' % phylogeny[rank][1]
