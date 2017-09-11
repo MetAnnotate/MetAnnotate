@@ -1063,8 +1063,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                         if target:
                             gi_num = target.split("|")[1]
                             taxid = gi_taxid_dictionary[gi_num]
-                            lineage = taxonomy.get_lineage_for_homolog(taxid, taxonomy_name_mappings.parents, taxonomy_name_mappings.name_dictionary,
-                                                                       taxonomy_name_mappings.ranks)
+                            lineage = taxonomy.get_lineage_for_homolog(taxid, taxonomy_name_mappings['parents'], taxonomy_name_mappings['name_dictionary'],
+                                                                       taxonomy_name_mappings['ranks'])
                             if not do_phylogenetic_classification:
                                 clade_taxid_counts[taxid] += 1
                         else:
@@ -1081,8 +1081,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                         # Best phyloigentic rank representatives and proportions.
                         phylogeny = clade_representatives[orf]
                         for rank in taxonomy.LINEAGE_LEVELS:
-                            if rank in phylogeny and phylogeny[rank][0] in taxonomy_name_mappings.name_dictionary:
-                                name = taxonomy_name_mappings.name_dictionary[phylogeny[rank][0]]
+                            if rank in phylogeny and phylogeny[rank][0] in taxonomy_name_mappings['name_dictionary']:
+                                name = taxonomy_name_mappings['name_dictionary'][phylogeny[rank][0]]
                                 proportion = '%.2f' % phylogeny[rank][1]
                                 last_name = name
                                 last_proportion = proportion
@@ -1104,8 +1104,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                     orfs_reported.add(full_orf)
                 # Creates Krona count files.
                 lineage_files[hmm_family_safe][orf_file_index] = (
-                    create_krona_count_file(temp_files, clade_taxid_counts, taxonomy_name_mappings.parents,
-                                            taxonomy_name_mappings.name_dictionary))
+                    create_krona_count_file(temp_files, clade_taxid_counts, taxonomy_name_mappings['parents'],
+                                            taxonomy_name_mappings['name_dictionary']))
                 # Removes eliminated sequences from raw reads file.
                 cell['sequences_hit'] = len(orfs_reported)
                 reads_file = os.path.join(OUTPUT_DIR, cell['reads_file'])
@@ -1145,8 +1145,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                     name = 'gi|%s|%s' % (gi_num, coords)
                     if gi_num in gi_taxid_dictionary:
                         taxid = gi_taxid_dictionary[gi_num]
-                        if taxid in taxonomy_name_mappings.name_dictionary:
-                            tax_name = taxonomy_name_mappings.name_dictionary[taxid]
+                        if taxid in taxonomy_name_mappings['name_dictionary']:
+                            tax_name = taxonomy_name_mappings['name_dictionary'][taxid]
                             tax_name = tax_name.replace(' ', '_')
                             tax_name = re.sub(r'[^_\w]+', '', tax_name)
                             name = 'gi|%s|%s|%s' % (gi_num, tax_name, coords)
