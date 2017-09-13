@@ -3,10 +3,9 @@
 #
 # Description: Contains functions for traversing taxonomy trees in order to assign taxonomies to HMM hits.
 # ======================================================================================================================
-
-
+import pickle
 from collections import defaultdict, Counter
-import cPickle as Pickle
+import cPickle as pickle
 
 LINEAGE_LEVELS = ('species', 'genus', 'family', 'order', 'class', 'phylum',
                   'superkingdom')
@@ -71,7 +70,7 @@ def update_tree_with_phylo_consistency(node, taxid_dictionary, ranks, parents):
 # Code for getting precomputed taxonomy information
 def get_taxonomy_names_id():
     with open('data/taxonomy.pickle') as f:
-        taxonomy_data = Pickle.load(f)
+        taxonomy_data = pickle.load(f)
         # Taxid (int): name (string)
         name_dictionary = taxonomy_data['names']
         # Taxid (int): lineage (list of ints, rightmost being root)
@@ -79,3 +78,53 @@ def get_taxonomy_names_id():
         # Taxid (int): rank (string)
         ranks = taxonomy_data['ranks']
         return {"name_dictionary": name_dictionary, "parents": parents, "ranks": ranks}
+
+
+def parse_taxonomy_names(names_dmp_path):
+    """
+    Takes an NCBI taxonomy names dump file and parses the scientific names of each taxa_id.
+    :param names_dmp_path: The path to the dump file.
+    :return: A dictionary containing taxa_id to name mappings.
+    """
+    names = {}
+    with open(names_dmp_path) as taxonomy_names_file:
+        for line in taxonomy_names_file:
+            if 'scientific name' in line:
+                column = line.split('|')
+                taxa_id = int(column[0].strip())
+                name = column[1].strip()
+                names[taxa_id] = name
+    return names
+
+
+def parse_taxa_nodes(nodes_dmp_path):
+    """
+    Takes an NCBI taxonomy nodes dump file and parses the scientific names of each taxa_id.
+    :param nodes_dmp_path: The path to the dump file.
+    :return 1: A dictionary containing taxa_id to parent mappings.
+    :return 2: A dictionary containing taxa_id to rank mappings.
+    """
+    parents = {}
+    ranks = {}
+    with open(nodes_dmp_path) as taxonomy_nodes_file:
+        for line in taxonomy_nodes_file:
+            column = line.split('|')
+            taxa_id = int(column[0].strip())
+            parent = int(column[1].strip())
+            rank = column[2].strip()
+            parents[taxa_id] = parent
+            ranks[taxa_id] = rank
+    return parents, ranks
+
+
+def pickle_taxonomy(pickle_path, taxonomy_names_dict, taxonomy_parents_dict, taxonomy_ranks_dict):
+    """
+    Takes the parsed NCBI taxonomy information and creates a pickle object dump of it.
+    :param pickle_path: The path where the pickle file should be written.
+    :param taxonomy_names_dict: A dictionary containing taxa_id to name mappings.
+    :param taxonomy_parents_dict: A dictionary containing taxa_id to parent mappings.
+    :param taxonomy_ranks_dict: A dictionary containing taxa_id to rank mappings.
+    """
+    with open(pickle_path, 'w') as pickle_file:
+        pickle.dump({'names': taxonomy_names_dict, 'parents': taxonomy_parents_dict, 'ranks': taxonomy_ranks_dict},
+                    pickle_file)
