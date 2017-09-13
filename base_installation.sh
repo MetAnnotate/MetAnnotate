@@ -34,7 +34,7 @@ if [ ! `which ktImportText` ] ; then
   chmod a+x install.pl
   ./install.pl --prefix "${HOME}/.local/"
   chmod a+x scripts/*.pl
-  cd $metAnnotateDir
+  cd ${metAnnotateDir}
 else
   echo -e "\nKronaTools is already installed.\n"
 fi
@@ -64,7 +64,7 @@ if [ ! `which guppy` ] ; then
   fi
   unzip pplacer*
   cd pplacer* && mv * ~/.local/bin/
-  cd $metAnnotateDir
+  cd ${metAnnotateDir}
 else
     echo -e "\nGuppy already installed.\n"
 fi
@@ -76,7 +76,7 @@ if [ ! -e data/taxonomy.pickle ] ; then
   tar -zxf taxdump.tar.gz
   grep 'scientific name' names.dmp > trimmed.names.dmp
   python make_taxonomy_pickle.py
-  cd $metAnnotateDir
+  cd ${metAnnotateDir}
 else
     echo -e "\nRefseq taxonomy dump already cached.\n"
 fi
@@ -87,7 +87,7 @@ if [ ! -e data/gi_taxid_prot.dmp ] ; then
   wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz"
   gunzip gi_taxid_prot.dmp.gz
   mv gi_taxid_prot.dmp ../data/
-  cd $metAnnotateDir
+  cd ${metAnnotateDir}
 else
   echo -e "\nTaxid mappings already cached.\n"
 fi

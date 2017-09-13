@@ -3,6 +3,6 @@ import sys
 
 tree_file = sys.argv[1]
 try:
-  ete2.Tree(tree_file)
+    ete2.Tree(tree_file)
 except:
-  sys.exit(1)
+    sys.exit(1)
