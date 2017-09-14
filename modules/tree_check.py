@@ -5,4 +5,5 @@ tree_file = sys.argv[1]
 try:
     ete2.Tree(tree_file)
 except ete2.parser.newick.NewickError:
+    print('Could not find file ', tree_file)
     sys.exit(1)
