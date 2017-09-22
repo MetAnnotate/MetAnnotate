@@ -156,7 +156,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    cli_title = """Creates a pickle file containing taxonomy information to be used by """
+    cli_title = """Creates a pickle file containing taxonomy information to be used by Metannotate"""
 
     parser = argparse.ArgumentParser(description=cli_title)
     parser.add_argument('-n', '--names_dmp_file', metavar='FILE', required=True,
