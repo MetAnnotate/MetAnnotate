@@ -74,7 +74,7 @@ if [ ! -e data/taxonomy.pickle ] ; then
   cd precompute
   wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
   tar -zxf taxdump.tar.gz
-  python ./scripts/make_taxonomy_pickle.py
+  python ./modules/taxonomy.py -n names.dmp -x nodes.dmp -o ../data/taxonomy.pickle
   cd ${metAnnotateDir}
 else
     echo -e "\nRefseq taxonomy dump already cached.\n"
