@@ -167,3 +167,4 @@ if __name__ == '__main__':
                         help='The path to where the pickle file should be written.')
 
     cli_args = parser.parse_args()
+    main(cli_args)
