@@ -27,3 +27,5 @@ path.txt
 cache
 test_output
 test_tmp
+!/testing/test_constants/test_nodes.dmp
+!/testing/test_constants/test_names.dmp
