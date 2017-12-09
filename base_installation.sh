@@ -72,10 +72,13 @@ fi
 echo -e "\nDownloading and indexing taxonomy info.\n"
 if [ ! -e data/taxonomy.pickle ] ; then
   cd precompute
-  wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
-  tar -zxf taxdump.tar.gz
+  wget "https://zenodo.org/record/1098450/files/taxdump_2017_03_01.tar.bz2"
+  tar -jxf taxdump_2017_03_01.tar.bz2
   grep 'scientific name' names.dmp > trimmed.names.dmp
   python make_taxonomy_pickle.py
+  rm -f precompute/gc.prt
+  rm -f precompute/readme.txt
+  rm -f precompute/taxdump_2017_03_01.tar.bz2
   cd ${metAnnotateDir}
 else
     echo -e "\nRefseq taxonomy dump already cached.\n"
@@ -103,9 +106,6 @@ crontab mycron
 rm mycron
 
 rm -rf downloads
-rm -f precompute/gc.prt
-rm -f precompute/readme.txt
-rm -f precompute/taxdump.tar.gz
 
 echo "$HOME/.local/bin/" > path.txt
 
