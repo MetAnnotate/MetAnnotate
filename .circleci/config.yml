@@ -31,11 +31,22 @@ jobs:
             - v1-general-dependencies-{{ checksum "base_installation.sh" }}
             - v1-general-dependencies-
 
+         # Install Linuxbrew
+        - run:
+            name: Install Linuxbrew
+            command: |
+              sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
+              yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+              test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$PATH"
+              test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+              test -r ~/.bash_profile && echo 'export PATH="$(brew --prefix)/bin:$PATH"' >>~/.bash_profile
+              echo 'export PATH="$(brew --prefix)/bin:$PATH"' >>~/.profile
+
         # Install dependencies and applications
         - run:
             name: Install Dependencies
             command: |
-              sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
+              export PATH="$HOME/.linuxbrew/bin:$PATH"
               ./base_installation.sh
 
         # Cache python dependencies
