@@ -41,13 +41,12 @@ jobs:
               test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
               test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
               echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
-              brew --prefix
 
         # Install dependencies and applications
         - run:
             name: Install Dependencies
             command: |
-              export PATH="$HOME/.linuxbrew/bin:$PATH"
+              export PATH="$HOME/linuxbrew/.linuxbrew/bin:$PATH"
               ./base_installation.sh
 
         # Cache python dependencies
@@ -59,7 +58,7 @@ jobs:
         # Cache homebrew dependencies
         - save_cache:
             paths:
-              - ~/.linuxbrew
+              - ~/linuxbrew/.linuxbrew
             key: v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
 
         # Cache all other dependencies and data
@@ -72,7 +71,7 @@ jobs:
         - run:
             name: Unit Testing
             command: |
-              export PATH="$HOME/.linuxbrew/bin:$PATH"
+              export PATH="$HOME/linuxbrew/.linuxbrew/bin:$PATH"
               cd testing
               nosetests -v
 
@@ -80,5 +79,5 @@ jobs:
         - run:
             name: End-to-end Testing
             command: |
-              export PATH="$HOME/.linuxbrew/bin:$PATH"
+              export PATH="$HOME/linuxbrew/.linuxbrew/bin:$PATH"
               /usr/bin/env bash -eo pipefail ./testing/test_metannotate_end_to_end.sh
