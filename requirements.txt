@@ -5,3 +5,4 @@ taxtastic==0.8.3
 lxml==3.7.1
 python-gflags==3.1.1
 ete2==2.3.10
+six==1.11.0
