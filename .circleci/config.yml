@@ -62,7 +62,7 @@ jobs:
         # Cache homebrew dependencies
         - save_cache:
             paths:
-              - ~/linuxbrew/.linuxbrew
+              - /home/linuxbrew/.linuxbrew
             key: v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
 
         # Cache all other dependencies and data
