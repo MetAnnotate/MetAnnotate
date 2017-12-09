@@ -31,11 +31,22 @@ jobs:
             - v1-general-dependencies-{{ checksum "base_installation.sh" }}
             - v1-general-dependencies-
 
+         # Install Linuxbrew
+        - run:
+            name: Install Linuxbrew
+            command: |
+              sudo apt-get install build-essential python curl file git python-setuptools ruby
+              yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)" || true
+              test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
+              test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+              test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
+              echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
+
         # Install dependencies and applications
         - run:
             name: Install Dependencies
             command: |
-              sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
+              export PATH="$HOME/.linuxbrew/bin:$PATH"
               ./base_installation.sh
 
         # Cache python dependencies
@@ -69,4 +80,4 @@ jobs:
             name: End-to-end Testing
             command: |
               export PATH="$HOME/.linuxbrew/bin:$PATH"
-              /usr/bin/env bash -eo pipefail ./test_metannotate_end_to_end.sh
+              /usr/bin/env bash -eo pipefail ./testing/test_metannotate_end_to_end.sh
