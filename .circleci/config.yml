@@ -47,6 +47,7 @@ jobs:
             name: Install Dependencies
             command: |
               export PATH="$HOME/linuxbrew/.linuxbrew/bin:$PATH"
+              brew --prefix
               ./base_installation.sh
 
         # Cache python dependencies
