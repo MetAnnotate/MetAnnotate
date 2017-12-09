@@ -87,9 +87,9 @@ fi
 echo -e "\nDownloading and indexing gi number to taxid mappings.\n"
 if [ ! -e data/gi_taxid_prot.dmp ] ; then
   cd precompute
-  wget "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz"
-  gunzip gi_taxid_prot.dmp.gz
-  mv gi_taxid_prot.dmp ../data/
+  wget "https://zenodo.org/record/1098450/files/gi_taxid_prot_2017_03_01.dmp.bz2"
+  pbzip2 -d gi_taxid_prot_2017_03_01.dmp.bz2
+  mv gi_taxid_prot_2017_03_01.dmp ../data/gi_taxid_prot.dmp
   cd ${metAnnotateDir}
 else
   echo -e "\nTaxid mappings already cached.\n"
