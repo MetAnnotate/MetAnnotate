@@ -12,9 +12,9 @@ jobs:
     steps:
         - checkout
 
-        # Prepare Linuxbrew Directory
+        # Prepare Linuxbrew Directory (so caching can write to the Linuxbrew directory)
         - run:
-            name: Install Linuxbrew
+            name: Prepare Linuxbrew Directory
             command: |
               sudo mkdir -p /home/linuxbrew/
               sudo chown -R $USER /home/linuxbrew/
