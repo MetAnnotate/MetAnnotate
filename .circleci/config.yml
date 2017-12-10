@@ -12,6 +12,13 @@ jobs:
     steps:
         - checkout
 
+        # Prepare Linuxbrew Directory
+        - run:
+            name: Install Linuxbrew
+            command: |
+              sudo mkdir -p /home/linuxbrew/
+              sudo chown -R $USER /home/linuxbrew/
+
         # Restore pip dependencies
         - restore_cache:
             keys:
@@ -31,7 +38,7 @@ jobs:
             - v1-general-dependencies-{{ checksum "base_installation.sh" }}
             - v1-general-dependencies-
 
-         # Install Linuxbrew
+        # Install Linuxbrew
         - run:
             name: Install Linuxbrew
             command: |
