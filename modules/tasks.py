@@ -15,7 +15,7 @@ from collections import defaultdict, Counter
 
 import celery
 
-from modules import hash
+from modules import hash, taxonomy
 
 CONCURRENCY = '2'
 CONCURRENCY_SPECIFIED = False
@@ -65,66 +65,6 @@ def run_process(args, stdout_file=None, meta=None, task=None):
         raise Exception('Command failed: %s', ' '.join(args))
 
 
-def get_lineage(taxid, parents):
-    lineage = []
-    current = taxid
-    while current != 1 and current in parents:
-        lineage.append(current)
-        current = parents[current]
-    return lineage
-
-
-def get_lineage_names(taxid, parents, name_dictionary):
-    lineage = get_lineage(taxid, parents)
-    return [name_dictionary[taxid] for taxid in lineage]
-
-
-LINEAGE_LEVELS = ('species', 'genus', 'family', 'order', 'class', 'phylum',
-                  'superkingdom')
-
-
-def get_lineage_for_homolog(taxid, parents, name_dictionary, ranks):
-    lineage = get_lineage(taxid, parents)
-    lineage = {ranks[l]: name_dictionary[l] for l in lineage}
-    final_lineage = []
-    best = 'unclassified'
-    for rank in LINEAGE_LEVELS:
-        final_lineage.append(lineage[rank] if rank in lineage else best)
-        best = final_lineage[-1]
-    return final_lineage
-
-
-def choose_representatives(node):
-    new_phylogeny = {}
-    for rank, counts in node.phylogeny.items():
-        new_phylogeny[rank] = counts.most_common(1)[0]
-    if len(new_phylogeny) == 0:
-        node.phylogeny = {}
-        return
-    max_count = float(max(common[1] for common in new_phylogeny.values()))
-    node.phylogeny = {k: (v[0], v[1] / max_count) for k, v in new_phylogeny.items()}
-
-
-def update_tree_with_phylo_consistency(node, taxid_dictionary, ranks, parents):
-    node.phylogeny = defaultdict(lambda: Counter())
-    if node.is_leaf():
-        if node.name and node.name.startswith('gi|'):
-            gi_num = node.name.split("|")[1]
-            taxid = taxid_dictionary[gi_num]
-            lineage = get_lineage(taxid, parents)
-            for taxid in lineage:
-                rank = ranks[taxid]
-                node.phylogeny[rank][taxid] = 1
-    else:
-        for child in node.children:
-            update_tree_with_phylo_consistency(child, taxid_dictionary, ranks, parents)
-            for rank, counts in child.phylogeny.iteritems():
-                node.phylogeny[rank].update(counts)
-            choose_representatives(child)
-    if node.is_root():
-        choose_representatives(node)
-
-
 # make temp file in TMP_DIR and push it to `all_temp` list,
 # so that we can clean up temp files later
 # return the name of the temp file made
@@ -170,7 +110,7 @@ def create_krona_count_file(temp_files, counts, parents, name_dictionary):
                 f.write(str(count))
                 f.write('\n')
                 continue
-            lineage = reversed(get_lineage_names(taxid, parents, name_dictionary))
+            lineage = reversed(taxonomy.get_lineage_names(taxid, parents, name_dictionary))
             lineage = list(lineage)
             lineage.insert(0, str(count))
             f.write('\t'.join(lineage))
@@ -1056,15 +996,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
             instance.update_state(meta=meta)
         else:
             print >> sys.stderr, 'Running taxonomic classification.'
-        # Loads precomputed taxonomy name and id mappings.
-        with open('data/taxonomy.pickle') as f:
-            taxonomy_data = Pickle.load(f)
-            # Taxid (int): name (string)
-            name_dictionary = taxonomy_data['names']
-            # Taxid (int): lineage (list of ints, rightmost being root)
-            parents = taxonomy_data['parents']
-            # Taxid (int): rank (string)
-            ranks = taxonomy_data['ranks']
+        # Loads precomputed taxonomy name and id mappings into object variable
+        taxonomy_name_mappings = taxonomy.get_taxonomy_names_id()
 
         if do_phylogenetic_classification:
             # Re-root tree at midpoint.
@@ -1076,8 +1009,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
             # Reads tree and determines closest refseq hit to each orf.
             tree = ete2.Tree(tree_file)
             # Determines the phylogentic consistency at each internal node.
-            update_tree_with_phylo_consistency(tree, gi_taxid_dictionary, ranks,
-                                               parents)
+            taxonomy.update_tree_with_phylo_consistency(tree, gi_taxid_dictionary, taxonomy_name_mappings['ranks'],
+                                                        taxonomy_name_mappings['parents'])
 
         # Prepares an output list of each ORF and matching target.
         orf_file_index = -1
@@ -1108,9 +1041,9 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                 if do_sequence_classification:
                     title_row += ['Closest Homolog', '%id of Closest Homolog']
                     title_row += ['Closest Homolog %s' % rank.capitalize()
-                                  for rank in LINEAGE_LEVELS]
+                                  for rank in taxonomy.LINEAGE_LEVELS]
                 if do_phylogenetic_classification:
-                    title_row += [col for rank in LINEAGE_LEVELS
+                    title_row += [col for rank in taxonomy.LINEAGE_LEVELS
                                   for col in ('Representative %s' % rank.capitalize(),
                                               '%s Proportion' % rank.capitalize())]
                     title_row += ['Best Representative', 'Representative Proportion']
@@ -1130,12 +1063,12 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                         if target:
                             gi_num = target.split("|")[1]
                             taxid = gi_taxid_dictionary[gi_num]
-                            lineage = get_lineage_for_homolog(taxid, parents, name_dictionary,
-                                                              ranks)
+                            lineage = taxonomy.get_lineage_for_homolog(taxid, taxonomy_name_mappings['parents'], taxonomy_name_mappings['name_dictionary'],
+                                                                       taxonomy_name_mappings['ranks'])
                             if not do_phylogenetic_classification:
                                 clade_taxid_counts[taxid] += 1
                         else:
-                            lineage = ['unclassified'] * len(LINEAGE_LEVELS)
+                            lineage = ['unclassified'] * len(taxonomy.LINEAGE_LEVELS)
                             if not do_phylogenetic_classification:
                                 clade_taxid_counts[None] += 1
                         output_row += [target, percent_id] + lineage
@@ -1147,9 +1080,9 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                         last_proportion = ''
                         # Best phyloigentic rank representatives and proportions.
                         phylogeny = clade_representatives[orf]
-                        for rank in LINEAGE_LEVELS:
-                            if rank in phylogeny and phylogeny[rank][0] in name_dictionary:
-                                name = name_dictionary[phylogeny[rank][0]]
+                        for rank in taxonomy.LINEAGE_LEVELS:
+                            if rank in phylogeny and phylogeny[rank][0] in taxonomy_name_mappings['name_dictionary']:
+                                name = taxonomy_name_mappings['name_dictionary'][phylogeny[rank][0]]
                                 proportion = '%.2f' % phylogeny[rank][1]
                                 last_name = name
                                 last_proportion = proportion
@@ -1171,8 +1104,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                     orfs_reported.add(full_orf)
                 # Creates Krona count files.
                 lineage_files[hmm_family_safe][orf_file_index] = (
-                    create_krona_count_file(temp_files, clade_taxid_counts, parents,
-                                            name_dictionary))
+                    create_krona_count_file(temp_files, clade_taxid_counts, taxonomy_name_mappings['parents'],
+                                            taxonomy_name_mappings['name_dictionary']))
                 # Removes eliminated sequences from raw reads file.
                 cell['sequences_hit'] = len(orfs_reported)
                 reads_file = os.path.join(OUTPUT_DIR, cell['reads_file'])
@@ -1212,8 +1145,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                     name = 'gi|%s|%s' % (gi_num, coords)
                     if gi_num in gi_taxid_dictionary:
                         taxid = gi_taxid_dictionary[gi_num]
-                        if taxid in name_dictionary:
-                            tax_name = name_dictionary[taxid]
+                        if taxid in taxonomy_name_mappings['name_dictionary']:
+                            tax_name = taxonomy_name_mappings['name_dictionary'][taxid]
                             tax_name = tax_name.replace(' ', '_')
                             tax_name = re.sub(r'[^_\w]+', '', tax_name)
                             name = 'gi|%s|%s|%s' % (gi_num, tax_name, coords)

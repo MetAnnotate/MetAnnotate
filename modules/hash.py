@@ -1,4 +1,3 @@
-import sys
 import hashlib
 
 
@@ -20,6 +19,3 @@ def md5hash(file, buf_size=65536):
 def hexhash(obj):
     s = str(hex(hash(obj)))
     return s.split('x')[1]
-
-
-
