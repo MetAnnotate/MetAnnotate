@@ -95,14 +95,18 @@ else
 fi
 
 echo -e "\nInstalling cronjob to clean cache. \n"
-crontab -l > mycron # saving current cronjob
-#echo new cron into cron file
-# cleaning cache every monday at 5am
-echo "# added by metannotate" >> mycron
-echo "00 05 * * 1 cd ${metAnnotateDir} && bash shell_scripts/clean_cache.sh" >> mycron
-#install new cron file
-crontab mycron
-rm mycron
+if [ `which crontab` ] ; then
+    crontab -l > mycron # saving current cronjob
+    #echo new cron into cron file
+    # cleaning cache every monday at 5am
+    echo "# added by metannotate" >> mycron
+    echo "00 05 * * 1 cd ${metAnnotateDir} && bash shell_scripts/clean_cache.sh" >> mycron
+    #install new cron file
+    crontab mycron
+    rm mycron
+else
+    echo -e "\nNo crontab found. Automate cache cleaning disabled. Please remember to clean your cache!\n"
+fi
 
 rm -rf downloads
 
