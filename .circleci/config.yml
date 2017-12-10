@@ -58,7 +58,7 @@ jobs:
               test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
               echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
               brew --prefix
-              ./base_installation.sh
+              /usr/bin/env bash -eo pipefail ./base_installation.sh
 
         # Cache python dependencies
         - save_cache:
