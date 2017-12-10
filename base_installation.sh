@@ -95,7 +95,7 @@ else
 fi
 
 echo -e "\nInstalling cronjob to clean cache. \n"
-if [ `which crontab` ] ; then
+if [ `crontab -l` ] ; then
     crontab -l > mycron # saving current cronjob
     #echo new cron into cron file
     # cleaning cache every monday at 5am
