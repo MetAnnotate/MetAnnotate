@@ -20,7 +20,9 @@ echo "Checking Refseq database being downloaded"
 #This might take a few hours
 if [ ! -e "Refseq.fa" ] || [ ! -e "Refseq.fa.ssi" ]; then
     echo "Downloading RefSeq database; could take a few hours if connection is slow"
-    # Note: when downloading from NCBI instead of Zenodo, this may have downloaded several files and then combined them. Keep this in mind if moving back to downloading directly from NCBI.
+    # Note: the old code that was here for downloading RefSeq directly from NCBI (instead of from Zenodo) implied that
+    # multiple files were downloaded from NCBI and then combined during a preprocessing step. Watch for this when
+    # updating this code to pull directly from NCBI again instead of from Zenodo; some modifications may be needed.
     wget "https://zenodo.org/record/1098450/files/metannotate_refseq_db_w_gi_2017_03_01.fa.bz2"
     pbzip2 -d -c metannotate_refseq_db_w_gi_2017_03_01.fa.bz2 > Refseq.fa
     echo "Preprocessing Refseq.fa to removing uncommon amino acids"
