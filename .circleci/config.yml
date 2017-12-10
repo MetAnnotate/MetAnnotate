@@ -12,6 +12,13 @@ jobs:
     steps:
         - checkout
 
+        # Prepare Linuxbrew Directory (so caching can write to the Linuxbrew directory)
+        - run:
+            name: Prepare Linuxbrew Directory
+            command: |
+              sudo mkdir -p /home/linuxbrew/
+              sudo chown -R $USER /home/linuxbrew/
+
         # Restore pip dependencies
         - restore_cache:
             keys:
@@ -31,11 +38,26 @@ jobs:
             - v1-general-dependencies-{{ checksum "base_installation.sh" }}
             - v1-general-dependencies-
 
+        # Install Linuxbrew
+        - run:
+            name: Install Linuxbrew
+            command: |
+              sudo apt-get install build-essential python curl file git python-setuptools ruby
+              yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)" || true
+              test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
+              test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+              test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
+              echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
+
         # Install dependencies and applications
         - run:
             name: Install Dependencies
             command: |
-              sudo apt-get install build-essential python-dev curl file git python-setuptools ruby
+              test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
+              test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+              test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
+              echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
+              brew --prefix
               ./base_installation.sh
 
         # Cache python dependencies
@@ -47,7 +69,7 @@ jobs:
         # Cache homebrew dependencies
         - save_cache:
             paths:
-              - ~/.linuxbrew
+              - /home/linuxbrew/.linuxbrew
             key: v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
 
         # Cache all other dependencies and data
@@ -60,7 +82,10 @@ jobs:
         - run:
             name: Unit Testing
             command: |
-              export PATH="$HOME/.linuxbrew/bin:$PATH"
+              test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
+              test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+              test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
+              echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
               cd testing
               nosetests -v
 
@@ -68,5 +93,8 @@ jobs:
         - run:
             name: End-to-end Testing
             command: |
-              export PATH="$HOME/.linuxbrew/bin:$PATH"
-              /usr/bin/env bash -eo pipefail ./test_metannotate_end_to_end.sh
+              test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
+              test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+              test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
+              echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
+              /usr/bin/env bash -eo pipefail ./testing/test_metannotate_end_to_end.sh
