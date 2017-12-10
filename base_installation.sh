@@ -105,7 +105,7 @@ if [ `which crontab` ] ; then
     crontab mycron
     rm mycron
 else
-    echo -e "\nNo crontab found. Automate cache cleaning disabled. Please remember to clean your cache!\n"
+    echo -e "\nNo crontab found. Automated cache cleaning disabled. Please remember to clean your cache!\n"
 fi
 
 rm -rf downloads
