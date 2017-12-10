@@ -1,7 +1,8 @@
 numpy==1.12.1
 celery==4.1.0
 pyflakes==1.6.0
-taxtastic==0.6.4
+taxtastic==0.8.3
 lxml==3.7.1
 python-gflags==3.1.1
 ete2==2.3.10
+six==1.11.0
