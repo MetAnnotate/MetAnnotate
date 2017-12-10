@@ -3,12 +3,12 @@
 # ======================================================================================================================
 # Created by: Metannotate Team (2017)
 #
-# Description: A shell script for installing dependencies via Linux Brew.
+# Description: A shell script for installing dependencies via Linuxbrew.
 #
 # Requirements: - Linux Brew
 # ======================================================================================================================
 
-# Two brew updates to get around some bugs.
+# Brew update twice to get around some bugs that occur with fresh brew installs.
 brew update
 brew update
 
