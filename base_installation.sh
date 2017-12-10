@@ -74,8 +74,7 @@ if [ ! -e data/taxonomy.pickle ] ; then
   cd precompute
   wget "https://zenodo.org/record/1098450/files/taxdump_2017_03_01.tar.bz2"
   tar -jxf taxdump_2017_03_01.tar.bz2
-  grep 'scientific name' names.dmp > trimmed.names.dmp
-  python make_taxonomy_pickle.py
+  python ../modules/taxonomy.py --names_dmp_file names.dmp --nodes_dmp_file nodes.dmp -o ../data/taxonomy.pickle
   rm -f precompute/gc.prt
   rm -f precompute/readme.txt
   rm -f precompute/taxdump_2017_03_01.tar.bz2
@@ -96,14 +95,18 @@ else
 fi
 
 echo -e "\nInstalling cronjob to clean cache. \n"
-crontab -l > mycron # saving current cronjob
-#echo new cron into cron file
-# cleaning cache every monday at 5am
-echo "# added by metannotate" >> mycron
-echo "00 05 * * 1 cd ${metAnnotateDir} && bash shell_scripts/clean_cache.sh" >> mycron
-#install new cron file
-crontab mycron
-rm mycron
+if [ `crontab -l` ] ; then
+    crontab -l > mycron # saving current cronjob
+    #echo new cron into cron file
+    # cleaning cache every monday at 5am
+    echo "# added by metannotate" >> mycron
+    echo "00 05 * * 1 cd ${metAnnotateDir} && bash shell_scripts/clean_cache.sh" >> mycron
+    #install new cron file
+    crontab mycron
+    rm mycron
+else
+    echo -e "\nNo crontab found. Automated cache cleaning disabled. Please remember to clean your cache!\n"
+fi
 
 rm -rf downloads
 

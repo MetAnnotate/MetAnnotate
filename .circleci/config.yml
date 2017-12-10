@@ -23,20 +23,16 @@ jobs:
         - restore_cache:
             keys:
             - v1-pip-dependencies-{{ checksum "requirements.txt" }}
-            # fallback to using the latest cache if no exact match is found.
-            - v1-pip-dependencies-
 
         # Restore homebrew dependencies
         - restore_cache:
             keys:
             - v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
-            - v1-brew-dependencies-
 
         # Restore general dependencies
         - restore_cache:
             keys:
             - v1-general-dependencies-{{ checksum "base_installation.sh" }}
-            - v1-general-dependencies-
 
         # Install Linuxbrew
         - run:
@@ -58,7 +54,7 @@ jobs:
               test -r ~/.bash_profile && echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.bash_profile
               echo "export PATH='$(brew --prefix)/bin:$(brew --prefix)/sbin'":'"$PATH"' >>~/.profile
               brew --prefix
-              ./base_installation.sh
+              /usr/bin/env bash -eo pipefail ./base_installation.sh
 
         # Cache python dependencies
         - save_cache:
