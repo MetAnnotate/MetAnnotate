@@ -7,6 +7,5 @@ RUN apt-get update \
 RUN git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git /home/linuxbrew \
 	&& cd /home/linuxbrew/Metannotate \
 	&& bash base_installation.sh \
-	&& bash refseq_installation.sh # to install databases
 
 ENV PATH=$PATH:/home/linuxbrew/Metannotate
