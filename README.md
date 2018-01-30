@@ -3,10 +3,10 @@
 Table of Contents
 =========================
 
-**[Installing MetAnnotate](#markdown-header-Installing-MetAnnotate)**  
-**[Running MetAnnotate](#markdown-header-Running-MetAnnotate)** 
-**[Additional usage notes](#markdown-Additional-usage-notes)**  
-**[Advanced: alternative web server configurations](#markdown-header-Advanced-alternative-web-server-configurations)**  
+**[Installing MetAnnotate](#Installing-MetAnnotate)**  
+**[Running MetAnnotate](#Running-MetAnnotate)** 
+**[Additional usage notes](#Additional-usage-notes)**  
+**[Advanced: alternative web server configurations](#Advanced:-alternative-web-server-configurations)**  
 
 Installing MetAnnotate
 =========================
