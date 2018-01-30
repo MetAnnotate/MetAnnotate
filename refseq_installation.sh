@@ -28,7 +28,7 @@ if [ ! -e "Refseq.fa" ] || [ ! -e "Refseq.fa.ssi" ]; then
     mv Refseq.fixed.fa Refseq.fa
     echo "Preprocessing completes"
     rm metannotate_refseq_db_w_gi_2017_03_01.fa.bz2
-    ~/.local/bin/esl-sfetch --index Refseq.fa
+    esl-sfetch --index Refseq.fa
 fi
 
 echo "Download successful."
