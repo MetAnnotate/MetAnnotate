@@ -6,7 +6,9 @@ jobs:
 
     machine:
       python:
-        version: pyenv 2.7.12
+        version: 2.7.14
+      ruby:
+        version: 2.3.6
       enabled: true
 
     steps:
