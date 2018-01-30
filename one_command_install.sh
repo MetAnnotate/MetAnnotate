@@ -4,38 +4,16 @@ echo "Installing commandline and web version of metAnnotate, along with database
 echo "This is going to need root access and will take a while."
 metAnnotateDir="`pwd`"
 
-if [ ! `which wget` ]; then
-    sudo apt-get -y install wget
-fi
-
 echo "installing all dependencies"
 sudo apt-get install -y python-dev build-essential default-jre
 echo "dependency installation complete, running main installation"
 
+# Run setup scripts
 bash ./base_installation.sh
-bash ./full_installation.sh
+bash ./web_UI_installation.sh
+bash ./refseq_installation.sh
 
-cd ${metAnnotateDir}/data
-echo "Checking Refseq database being downloaded"
-#This might take a few hours
-if [ ! -e "Refseq.fa" ] || [ ! -e "Refseq.fa.ssi" ]; then
-    echo "Downloading RefSeq database; could take a few hours if connection is slow"
-    # Note: the old code that was here for downloading RefSeq directly from NCBI (instead of from Zenodo) implied that
-    # multiple files were downloaded from NCBI and then combined during a preprocessing step. Watch for this when
-    # updating this code to pull directly from NCBI again instead of from Zenodo; some modifications may be needed.
-    wget "https://zenodo.org/record/1098450/files/metannotate_refseq_db_w_gi_2017_03_01.fa.bz2"
-    pbzip2 -d -c metannotate_refseq_db_w_gi_2017_03_01.fa.bz2 > Refseq.fa
-    echo "Preprocessing Refseq.fa to removing uncommon amino acids"
-    perl ../scripts/cleanDatabase.pl Refseq.fa > list_to_remove.txt
-    perl ../scripts/removeFromFasta.pl list_to_remove.txt Refseq.fa > Refseq.fixed.fa
-    rm list_to_remove.txt
-    rm Refseq.fa
-    mv Refseq.fixed.fa Refseq.fa
-    echo "Preprocessing completes"
-    rm metannotate_refseq_db_w_gi_2017_03_01.fa.bz2
-    ~/.local/bin/esl-sfetch --index Refseq.fa
-fi
-
+# Create example metagenome directory files for the web UI
 cd ${metAnnotateDir}
 mkdir -p "${HOME}/metagenome_files/sample"
 echo "${HOME}/metagenome_files" > metagenome_directories_root.txt
@@ -53,4 +31,4 @@ fi
 
 echo "=======Test passed====="
 
-echo "Please start server by running 'bash shell_scritps/start-server.sh'"
+echo "Please start server by running 'bash shell_scripts/start-server.sh'"
