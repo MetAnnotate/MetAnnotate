@@ -41,6 +41,7 @@ jobs:
               python -V
               ls /usr/lib/ruby/
               sudo apt-get install build-essential curl file git python-setuptools
+              HOMEBREW_FORCE_VENDOR_RUBY=1
               yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)" || true
               test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
               test -d /home/linuxbrew/.linuxbrew && PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
