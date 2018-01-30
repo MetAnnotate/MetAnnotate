@@ -3,35 +3,25 @@
 Table of Contents
 =========================
 
-**[Support and Requirements](#markdown-header-support-and-requirements)**  
-**[Installing Base/Command Line Version](#markdown-header-base-installation)** 
-**[Concurrency](#markdown-header-concurrency)**  
-**[Built-in Webserver](#markdown-header-built-in-webserver)**  
-**[A Note on Cache](#markdown-header-a-note-on-cache)**  
-**[Known Issues](#markdown-header-known-issues)**  
-**[Configure With Apache and Celeryd](#markdown-header-configure-with-apache-and-celeryd)**  
+**[Installing MetAnnotate](#markdown-header-Installing-MetAnnotate)**  
+**[Running MetAnnotate](#markdown-header-Running-MetAnnotate)** 
+**[Additional usage notes](#markdown-Additional-usage-notes)**  
+**[Advanced: alternative web server configurations](#markdown-header-Advanced-alternative-web-server-configurations)**  
 
-Installation Instructions
+Installing MetAnnotate
 =========================
 
-Packaged Installation (Simpler)
----
-This is a simpler to install with [Docker](https://www.docker.com/) packaging (similar to running in virtual box). However, you won't be able to (or it is inconvenient to) use the command line version of MetAnntoate. 
+MetAnnotate can be used either as a command line tool or as a web UI (hosted by your server).
 
-It works on a Mac and on Linux, however, be sure that your laptop meets required RAM and space requirement. 
-
-*Follow instructions here* https://bitbucket.org/doxeylab/metannotateinstaller
-
-The rest of the README is for Ubuntu 14.04+ users with fair technical knowledge. It is _required_ if you want to use the command line version of MetAnnotate. 
-
-
-
-Support and Requirements
+Requirements
 ------------------------
-Debian/Ubuntu, with at least 6GB of space + the space required to store the Refseq database.
+**Operating system**: Debian/Ubuntu
 
-The following packages are required. Note that in [One Command Install](#markdown-header-one-command-install), the dependencies are _automatically_installed
+**Disk space**: >= 6 GiB of disk space + space to store the Refseq database (~20 GiB as of Jan. 2018).
 
+**Dependencies**: [linuxbrew](http://linuxbrew.sh) must be installed prior to using MetAnnotate.
+ 
+ Other dependencies are added **automatically** during installation:
  * python-dev (version 2.7)
  * build-essential
  * default-jre
@@ -42,17 +32,11 @@ The following packages are required. Note that in [One Command Install](#markdow
  * libssl-dev 
  * libffi-dev 
  * sqlite3
+ * ...and so on.
 
+Complete installation (command line and web UI)
+------------------------
 
-
-One Command Install (install all dependencies, command-line and webserver)
-----
-
-For Ubuntu:14.04: 
-
-*NOTE* machine root password is required and will be asked for
-
-Step 1: 
 ```bash
 #cd to home directory
 sudo apt-get update
@@ -65,13 +49,49 @@ bash one_command_install.sh
 # enter password as required
 ```
 
+Command line installation
+------------------------
 
-Sample run:
+If you wish to install only the command line version of MetAnnotate, please run the following code:
+
+```bash
+#cd to home directory
+sudo apt-get update
+if [ ! `which git` ]; then
+  sudo apt-get install -y git
+fi
+git clone --depth=1 https://bitbucket.org/doxeylab/metannotate.git
+cd metannotate
+bash base_installation.sh
+bash refseq_installation.sh # to install databases
+# enter password as required
+```
+
+You can then run `metannotate.py` from within the install folder.
+
+
+Docker installation (simpler, for web UI only)
+---
+**Recommended for users with less coding experience who only need the web UI version of MetAnnotate**
+
+This install relies on [Docker](https://www.docker.com/)to avoid common installation errors and allows you to access the web UI version of MetAnnotate. Installing via Docker allows you to run MetAnnotate in a virtual machine-like environment on your server.
+
+(It is still possible but is inconvenient to use the command line version of MetAnnotate when installing in this way.) 
+
+The Docker installation works on both Mac (OSX) and on Linux (provided that you have sufficient disk space and RAM -- see Requirements above). 
+
+*Follow instructions here* https://bitbucket.org/doxeylab/metannotateinstaller
+
+
+Running MetAnnotate
+=========================
+
+Command line example
 ---
 
     python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
-Note that in the example above, a [tiny] test reference database was specified to make process faster. If not specified, the default data/Refseq.fa database is used. You should now see run outputs in `test_output` directory. 
+Note that in the example above, a (tiny) test reference database was specified to make process faster. If not specified, the default data/Refseq.fa database is used. You should now see run outputs in `test_output` directory. 
 
 
 For more options:
@@ -80,31 +100,33 @@ For more options:
 
 Concurrency
 -----------
-You can speed up metannotate by specifying a greater concurrency in metannotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
+You can speed up metannotate by specifying a greater concurrency (number of threads) in metannotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
 
-Built-in Webserver
+Web UI (web server)
 ------------------
-The web server is installed as part of *One Command Install*
+After installing MetAnnotate via `one_command_install.sh` (see above), you'll need to configure and start the web server before it is usable.
 
-There are two files that provide additional configuration:
+**Configuration**: you need to specify the locations on the server where metagenomes will be stored using the following files: 
 
  * metagenome\_directories\_root.txt
  * metagenome\_directories.txt
  
-These files are already placed in the main metannotate directory.
+These files are already placed in the main MetAnnotate directory.
 
-metagenome\_directories\_root.txt contains the root path for all metagenome
-directories that will be read by the program. metagenome\_directories.txt lists
+`metagenome_directories_root.txt` contains the root path for all metagenome
+directories that will be read by the program. `metagenome_directories.txt` lists
 all the directories in that root directory that should be read as metagenome
 directories (in the case that you have other directories in the root directory
 that shouldn't be interpreted as metagenome directories).
 
-To start server:
+**Starting and stopping the server**:
+
+To start the server:
 
     bash start-server.sh 
     # enter password as prompted
 
-To stop server: 
+To stop the server: 
 
     bash stop.sh
     # enter password as prompted
@@ -115,6 +137,8 @@ Output of server is at `out.txt` for debugging purposes.
 Occasionally (when no job is running), you can run `rm tmp/*` to free up disk space. 
 
 
+Additional usage notes
+=========================
 
 A Note on Cache
 ----
@@ -123,14 +147,17 @@ MetAnnotate has a cache layer that is cleaned every week. You can modify your Cr
 
 Repeating the same HMM files is much faster with cache (95% speed up). 
 
+
 Known Issues
 ----
 
 If an ORF file has no HMM hit, the script will terminate and job will error out.
 
 
+Advanced: alternative web server configurations
+=========================
 
-Configure with Apache and Celeryd (More technical)
+Configuring the web UI with Apache and Celeryd (more technical)
 ---------------------------------
 
 Configuring the app to run with an Apache server and an existing celery daemon
