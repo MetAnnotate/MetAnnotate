@@ -1,4 +1,4 @@
-FROM linuxbrew:1.5.0
+FROM linuxbrew/linuxbrew:1.5.0
 LABEL maintainer="Jackson M. Tsuji <jackson.tsuji@uwaterloo.ca>"
 
 RUN apt-get update \
