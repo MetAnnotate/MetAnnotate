@@ -17,7 +17,7 @@ set -o pipefail
 brew update
 brew update
 
-brew tap homebrew/science
+brew tap brewsci/science
 brew tap Metannotate/homebrew-metannotate
 brew update
 
