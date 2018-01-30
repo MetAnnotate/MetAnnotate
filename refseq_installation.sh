@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Robust bash header (Buffalo, 2015):
+set -e
+set -u
+set -o pipefail
+
 echo "Installing RefSeq database. Could take some time to download."
 metAnnotateDir="`pwd`"
 
