@@ -8,4 +8,4 @@ RUN git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git /home/
 	&& cd /home/linuxbrew/Metannotate \
 	&& bash base_installation.sh \
 
-ENV PATH=$PATH:/home/linuxbrew/Metannotate
+ENV PATH="${PATH}:/home/linuxbrew/Metannotate"
