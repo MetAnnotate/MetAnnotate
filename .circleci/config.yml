@@ -37,6 +37,8 @@ jobs:
         - run:
             name: Install Linuxbrew
             command: |
+              ruby -v
+              python -V
               sudo apt-get install build-essential curl file git python-setuptools
               yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)" || true
               test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
