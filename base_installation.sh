@@ -104,6 +104,9 @@ else
 fi
 
 echo -e "\nInstalling cronjob to clean cache. \n"
+if [ ! `which crontab` ]; then
+    sudo apt-get install -y crontab
+fi
 if [ `crontab -l` ] ; then
     crontab -l > mycron # saving current cronjob
     #echo new cron into cron file
