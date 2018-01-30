@@ -12,10 +12,11 @@ Requirements
 
 **Disk space**: >= 6 GiB of disk space + space to store the Refseq database (~20 GiB as of Jan. 2018).
 
-**Dependencies**: [linuxbrew](http://linuxbrew.sh) must be installed prior to using MetAnnotate.
+**Dependencies**:
+* [linuxbrew](http://linuxbrew.sh) -- see install instructions at the link provided
+* python-dev (2.7.x) -- e.g., `sudo apt-get install -y python-dev`
  
  Other dependencies are added **automatically** during installation:
- * python-dev (version 2.7)
  * build-essential
  * default-jre
  * git
