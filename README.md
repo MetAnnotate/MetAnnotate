@@ -1,12 +1,5 @@
 [![Gitter chat](https://badges.gitter.im/Metannotate.png)](https://gitter.im/Metannotate)
 
-Table of Contents
-=========================
-
-**[Installing MetAnnotate](#Installing-MetAnnotate)**  
-**[Running MetAnnotate](#Running-MetAnnotate)** 
-**[Additional usage notes](#Additional-usage-notes)**  
-**[Advanced: alternative web server configurations](#Advanced:-alternative-web-server-configurations)**  
 
 Installing MetAnnotate
 =========================
