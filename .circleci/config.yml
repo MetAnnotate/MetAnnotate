@@ -38,7 +38,7 @@ jobs:
               ruby -v
               python -V
               ls /usr/lib/ruby/
-              yes | sudo apt-add-repository ppa:brightbox/ruby-ng
+              yes | sudo apt-add-repository ppa:brightbox/ruby-ng || true
               sudo apt-get install build-essential curl file git python-setuptools ruby2.3 ruby2.3-dev
               yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)" || true
               test -d ~/.linuxbrew && PATH="$HOME/.linuxbrew/bin:$HOME/.linuxbrew/sbin:$PATH"
