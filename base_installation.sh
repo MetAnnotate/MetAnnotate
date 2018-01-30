@@ -10,6 +10,10 @@ mkdir -p downloads
 mkdir -p software
 mkdir -p cache
 
+if [ ! `which wget` ]; then
+    sudo apt-get -y install wget
+fi
+
 echo -e "\nInstalling pip.\n"
 if [ ! `which pip` ] ; then
   cd downloads
