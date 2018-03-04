@@ -9,6 +9,12 @@
 # Requirements: - A full CLI installation of Metannotate
 # ======================================================================================================================
 
+# Robust bash header (Buffalo, 2015):
+set -e
+set -u
+set -o pipefail
+
+# TODO - add try-catch statement to report if running metannotate itself fails
 echo "Running Metannotate..."
 python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
