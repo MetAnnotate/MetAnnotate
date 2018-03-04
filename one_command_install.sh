@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Robust bash header (Buffalo, 2015):
+set -e
+set -u
+set -o pipefail
+
 echo "Installing commandline and web version of metAnnotate, along with database"
 echo "This is going to need root access and will take a while."
 metAnnotateDir="`pwd`"

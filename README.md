@@ -12,10 +12,11 @@ Requirements
 
 **Disk space**: >= 6 GiB of disk space + space to store the Refseq database (~20 GiB as of Jan. 2018).
 
-**Dependencies**: [linuxbrew](http://linuxbrew.sh) must be installed prior to using MetAnnotate.
+**Dependencies**:
+* [linuxbrew](http://linuxbrew.sh) -- see install instructions at the link provided
+* python-dev (2.7.x) -- e.g., `sudo apt-get install -y python-dev`
  
  Other dependencies are added **automatically** during installation:
- * python-dev (version 2.7)
  * build-essential
  * default-jre
  * git
@@ -65,6 +66,8 @@ You can then run `metannotate.py` from within the install folder.
 
 Docker installation (simpler, for web UI only)
 ---
+**NOTE**: The Docker container is currently deprecated and is in the process of being restored to working condition. Please be patient.
+
 **Recommended for users with less coding experience who only need the web UI version of MetAnnotate**
 
 This install relies on [Docker](https://www.docker.com/)to avoid common installation errors and allows you to access the web UI version of MetAnnotate. Installing via Docker allows you to run MetAnnotate in a virtual machine-like environment on your server.
@@ -74,6 +77,21 @@ This install relies on [Docker](https://www.docker.com/)to avoid common installa
 The Docker installation works on both Mac (OSX) and on Linux (provided that you have sufficient disk space and RAM -- see Requirements above). 
 
 *Follow instructions here* https://bitbucket.org/doxeylab/metannotateinstaller
+
+New! Docker installation for command line use (STILL IN DEVELOPMENT)
+---
+```bash
+docker build -t metannotate/metannotate:dev1 github.com/Metannotate/Metannotate.git#linuxbrew
+docker run -it metannotate/metannotate:dev1 /bin/bash # Can mount on the metagenomes and HMMs via the -v flag
+
+# Inside the container:
+# To install RefSeq
+/home/linuxbrew/Metannotate/refseq_installation.sh
+
+# To run
+python /home/linuxbrew/Metannotate/run_metannotate.py [OPTIONS]
+```
+The goal is to build a wrapper script that will handle mounting files in the coming weeks [Jan. 30, 2018].
 
 
 Running MetAnnotate
