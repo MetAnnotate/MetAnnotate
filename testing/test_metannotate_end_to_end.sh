@@ -14,38 +14,64 @@ python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hm
 
 echo "Verifying outputs..."
 
-cd testing/test_constants
+EXIT_CODE=0
+ROOT_PATH=$(pwd)
 
+## Check that the number of files in --output_dir is correct
+# TODO: replace this test with individual tests for each expected file
+NUM_OUTPUT_FILES=$(ls ${ROOT_PATH}/test_output | wc -l | sed 's/ //g')
+CORRECT_NUM_FILES=13
+if [[ ${NUM_OUTPUT_FILES} -eq ${CORRECT_NUM_FILES} ]]; then
+    echo "Correct number of files in output_dir ("${CORRECT_NUM_FILES}")"
+else
+    echo "Unexpected number of files in output_dir. Expected: "${CORRECT_NUM_FILES}"; Produced: "${NUM_OUTPUT_FILES}
+    EXIT_CODE=1
+fi
+
+## Check hashes
 # Get reference hash file checksums
-FIRST_HASH=$(md5sum rpoB_0_msa_0.fa | cut -d ' ' -f 1)
-SECOND_HASH=$(md5sum rpoB_0_refseq_msa_1.fa | cut -d ' ' -f 1)
-
-cd ../..
+declare -a REFERENCE_FILE_HASHES
+cd ${ROOT_PATH}/testing/test_constants
+REFERENCE_FILE_HASHES[0]=$(md5sum rpoB_0_msa_0.fa | cut -d ' ' -f 1)
+REFERENCE_FILE_HASHES[1]=$(md5sum rpoB_0_refseq_msa_1.fa | cut -d ' ' -f 1)
+# only first 14 columns of annotations table are consistent between runs
+REFERENCE_FILE_HASHES[2]=$(cut -f 1-14 rpoB_0_MetagenomeTest_0_annotations.tsv | md5sum | cut -d ' ' -f 1)
 
 # Store generated test output hashes in array
+# Keys in REFERENCE_FILE_HASHES should correspond to same key in REGENERATED_FILE_HASHES
 declare -a REGENERATED_FILE_HASHES
-
-for entry in $(ls test_output); do
-    # Checks if entry is the one we are looking to compare
-    if [[ ${entry} == *"0_msa"* && ${entry} == *".fa"* ]]; then
-        cd test_output
+declare -a CHECKED_FILES
+cd ${ROOT_PATH}/test_output
+for entry in $(ls); do
+    # Checks if entry is the query msa fasta
+    if [[ ${entry} == rpoB_0_msa*fa ]]; then
         REGENERATED_FILE_HASHES[0]=$(md5sum ${entry} | cut -d ' ' -f 1)
-        cd ..
+        CHECKED_FILES[0]=${entry}
     fi
 
-    # Checks if entry is the one we are looking to compare
-    if [[ ${entry} == *"refseq"* && ${entry} == *".fa"* ]]; then
-        cd test_output
+    # Checks if entry is the refseq msa fasta
+    if [[ ${entry} == rpoB_0_refseq_msa*fa ]]; then
         REGENERATED_FILE_HASHES[1]=$(md5sum ${entry} | cut -d ' ' -f 1)
-        cd ..
+        CHECKED_FILES[1]=${entry}
+    fi
+
+    # Checks if entry is the annotations table
+    # Only the first 14 columns are consistent between metannotate runs
+    if [[ ${entry} == rpoB_0_MetagenomeTest_0_annotations*tsv ]]; then
+        REGENERATED_FILE_HASHES[2]=$(cut -f 1-14 ${entry} | md5sum | cut -d ' ' -f 1)
+        CHECKED_FILES[1]=${entry}
     fi
 done
 
-# If the hashes match, pass the test.
-if [[ ${REGENERATED_FILE_HASHES[0]} == ${FIRST_HASH} && ${REGENERATED_FILE_HASHES[1]} == ${SECOND_HASH} ]]; then
-    echo "Hash matches! Test passes."
-    exit 0
-else
-    echo "Hash mismatch! Test fails."
-    exit 1
-fi
+# If the hashes match, pass the test
+# Keys in REFERENCE_FILE_HASHES should correspond to same key in REGENERATED_FILE_HASHES
+for entry_index in ${!CHECKED_FILES[@]}; do
+    if [[ ${REFERENCE_FILE_HASHES[$entry_index]} == ${REGENERATED_FILE_HASHES[$entry_index]} ]]; then
+        echo ${CHECKED_FILES[$entry_index]}" passed the hash check."
+    else
+        echo ${CHECKED_FILES[$entry_index]}" failed the hash check."
+        EXIT_CODE=1
+    fi
+done
+
+exit ${EXIT_CODE}
