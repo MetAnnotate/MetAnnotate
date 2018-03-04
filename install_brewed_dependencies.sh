@@ -25,6 +25,7 @@ mkdir -p $HOME/.local/lib/python2.7/site-packages
 echo "import site; site.addsitedir('$HOME/.linuxbrew/lib/python2.7/site-packages')" >> $HOME/.local/lib/python2.7/site-packages/homebrew.pth
 
 brew install gcc
+brew install linuxbrew/xorg/xorg
 brew install emboss --without-x
 brew install fasttree
 brew install hmmer
