@@ -15,7 +15,7 @@ jobs:
             name: Prepare Directories For Cache Retreival
             command: |
               sudo chown -R $USER /home/linuxbrew/
-              sudo chown -R $USER /home/circleci/repo/
+              sudo chown -R $USER /home/linuxbrew/repo/
 
         # Restore homebrew dependencies
         - restore_cache:
