@@ -10,6 +10,13 @@ jobs:
     steps:
         - checkout
 
+        # Prepare Linuxbrew Directory (so caching can write to the Linuxbrew directory)
+        - run:
+            name: Prepare Linuxbrew Directory
+            command: |
+              sudo mkdir -p /home/linuxbrew/
+              sudo chown -R $USER /home/linuxbrew/
+
         # Restore homebrew dependencies
         - restore_cache:
             key: v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
