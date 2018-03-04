@@ -10,10 +10,6 @@ jobs:
     steps:
         - checkout
 
-        # Restore pip dependencies
-        - restore_cache:
-            key: v1-pip-dependencies-{{ checksum "requirements.txt" }}
-
         # Restore homebrew dependencies
         - restore_cache:
             key: v1-brew-dependencies-{{ checksum "install_brewed_dependencies.sh" }}
@@ -31,12 +27,6 @@ jobs:
               sudo ln -s /home/linuxbrew/.linuxbrew/bin/pip2 /bin/pip
               /usr/bin/env bash -eo pipefail ./base_installation.sh
               nproc > concurrency.txt
-
-        # Cache python dependencies
-        - save_cache:
-            paths:
-               - /home/linuxbrew/.linuxbrew
-            key: v1-pip-dependencies-{{ checksum "requirements.txt" }}
 
         # Cache homebrew dependencies
         - save_cache:
