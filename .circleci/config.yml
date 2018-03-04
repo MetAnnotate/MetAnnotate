@@ -28,7 +28,6 @@ jobs:
             command: |
               sudo apt-get update
               brew install python
-              brew install wget
               sudo ln -s /home/linuxbrew/.linuxbrew/bin/python2 /bin/python
               sudo ln -s /home/linuxbrew/.linuxbrew/bin/pip2 /bin/pip
               /usr/bin/env bash -eo pipefail ./base_installation.sh
