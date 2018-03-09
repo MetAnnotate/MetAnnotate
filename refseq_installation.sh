@@ -61,6 +61,7 @@ if [ ! -e "Refseq.fa" ] || [ ! -e "Refseq.fa.ssi" ]; then
     echo "Preprocessing completes"
     rm metannotate_refseq_db_w_gi_2017_03_01.fa.bz2
     esl-sfetch --index Refseq.fa
+    echo "Download successful. Saved to ${output_dir}."
+else
+    echo "Found Refseq.fa and Refseq.fa.ssi in '${output_dir}'. RefSeq is already installed and indexed. Nothing to do."
 fi
-
-echo "Download successful. Saved to ${output_dir}."
