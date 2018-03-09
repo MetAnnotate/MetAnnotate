@@ -37,6 +37,13 @@ if [ -e ~/.local/bin/pip ] ; then
 fi
 $pip install --user -r requirements.txt --ignore-installed --quiet
 
+echo -e "\nInstalling java.\n"
+if [ ! `which java` ] ; then
+  sudo apt-get -y install default-jre
+else
+    echo -e "\nJava is already installed.\n"
+fi
+
 echo -e "\nInstalling KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
   cd included_software/KronaTools-2.5/
