@@ -16,5 +16,5 @@ RUN git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git /home/
 
 # Install MetAnnotate (command line) and test
 RUN cd /home/linuxbrew/Metannotate && bash base_installation.sh
-RUN cd /home/linuxbrew/Metannotate && bash test_metannotate_end_to_end.sh
+RUN cd /home/linuxbrew/Metannotate && bash testing/test_metannotate_end_to_end.sh
 ENV PATH="${PATH}:/home/linuxbrew/Metannotate"
