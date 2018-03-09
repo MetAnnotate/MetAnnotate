@@ -15,6 +15,7 @@ Requirements
 **Dependencies**:
 * [linuxbrew](http://linuxbrew.sh) -- see install instructions at the link provided
 * python-dev (2.7.x) -- e.g., `sudo apt-get install -y python-dev`
+* OR [docker-ce](https://docs.docker.com/install/linux/docker-ce/ubuntu/) if using the Docker container (above dependencies not needed in this case)
  
  Other dependencies are added **automatically** during installation:
  * build-essential
@@ -28,7 +29,46 @@ Requirements
  * sqlite3
  * ...and so on.
 
-Complete installation (command line and web UI)
+Recommended: Docker installation for command line and (soon) web GUI
+---
+**NOTE**: Web GUI is not yet supported for Docker in this fork. Please be patient.
+
+This install relies on [Docker](https://www.docker.com/) to avoid common installation errors. Installing via Docker allows you to run MetAnnotate in a virtual machine-like environment on your server.
+
+The Docker installation should work on any operating system supporting Docker (e.g., Mac OSX, Linux, or Windows, provided that you have sufficient disk space and RAM as stated in the Requirements), although only Linux has been tested. 
+
+Get started with:
+```
+docker run -it jmtsuji/metannotate:latest /bin/bash
+```
+
+To use the command line effectively, you'll need to mount system file directories into the Docker container. This is handled by the friendly wrapper included in this repo, `enter-metannotate`. This will enter the Docker container for you. Simply add the script to your ordinary system PATH (as shown below) and run the entry command:
+
+```
+git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git
+cd Metannotate
+chmod 755 enter-metannotate
+sudo cp enter-metannotate /usr/local/bin # or add to your path a different way, or use locally only.
+rm -r Metannotate # if only using Docker, the rest of the git repo is not needed. Might need sudo to delete the git repo.
+
+enter-metannotate # to see informative help file that goes into more detail than presented here
+enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
+```
+
+Example command line usage:
+```
+# Download RefSeq database (only needed on first use):
+enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
+refseq_installation.sh /home/linuxbrew/databases
+exit
+
+# Start MetAnnotate run via the simple command line wrapper (run metannotate-wrapper-docker for more detailed help):
+enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
+metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log
+exit
+```
+
+Complete (non-Docker) installation (command line and web UI)
 ------------------------
 
 ```bash
@@ -37,13 +77,14 @@ sudo apt-get update
 if [ ! `which git` ]; then
   sudo apt-get install -y git
 fi
-git clone --depth=1 https://bitbucket.org/doxeylab/metannotate.git
-cd metannotate
+git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git
+cd Metannotate
 bash one_command_install.sh
 # enter password as required
 ```
+**Note**: This is still untested in this fork of MetAnnotate (undergoing code base improvements)
 
-Command line installation
+Command line (non-Docker) installation
 ------------------------
 
 If you wish to install only the command line version of MetAnnotate, please run the following code:
@@ -54,64 +95,47 @@ sudo apt-get update
 if [ ! `which git` ]; then
   sudo apt-get install -y git
 fi
-git clone --depth=1 https://bitbucket.org/doxeylab/metannotate.git
-cd metannotate
+git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git
+cd Metannotate
 bash base_installation.sh
 bash refseq_installation.sh # to install databases
 # enter password as required
 ```
 
-You can then run `metannotate.py` from within the install folder.
-
-
-Docker installation (simpler, for web UI only)
----
-**NOTE**: The Docker container is currently deprecated and is in the process of being restored to working condition. Please be patient.
-
-**Recommended for users with less coding experience who only need the web UI version of MetAnnotate**
-
-This install relies on [Docker](https://www.docker.com/)to avoid common installation errors and allows you to access the web UI version of MetAnnotate. Installing via Docker allows you to run MetAnnotate in a virtual machine-like environment on your server.
-
-(It is still possible but is inconvenient to use the command line version of MetAnnotate when installing in this way.) 
-
-The Docker installation works on both Mac (OSX) and on Linux (provided that you have sufficient disk space and RAM -- see Requirements above). 
-
-*Follow instructions here* https://bitbucket.org/doxeylab/metannotateinstaller
-
-New! Docker installation for command line use (STILL IN DEVELOPMENT)
----
-```bash
-docker build -t metannotate/metannotate:dev1 github.com/Metannotate/Metannotate.git#linuxbrew
-docker run -it metannotate/metannotate:dev1 /bin/bash # Can mount on the metagenomes and HMMs via the -v flag
-
-# Inside the container:
-# To install RefSeq
-/home/linuxbrew/Metannotate/refseq_installation.sh
-
-# To run
-python /home/linuxbrew/Metannotate/run_metannotate.py [OPTIONS]
-```
-The goal is to build a wrapper script that will handle mounting files in the coming weeks [Jan. 30, 2018].
+You can then run `run_metannotate.py` from within the install folder (does not work if run outside the install folder). Try `run_metannotate.py -h` for options.
 
 
 Running MetAnnotate
 =========================
 
-Command line example
+Command line example -- advanced usage
 ---
-
-    python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
-
+```
+# cd [metannotate_repo_directory]
+run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
+```
 Note that in the example above, a (tiny) test reference database was specified to make process faster. If not specified, the default data/Refseq.fa database is used. You should now see run outputs in `test_output` directory. 
 
-
 For more options:
+```
+python run_metannotate.py --help
+```
 
-    python run_metannotate.py --help
+Command line example -- simplified
+---
+You lose access to more advanced settings like e-value cutoffs using the provided wrappers, but you gain much in simplicity:
 
-Concurrency
+```
+# Standard wrapper
+metannotate-wrapper [metannotate_dir] [RefSeq_dir] [run_type] [path_to_orf_files] [path_to_hmm_files] [output_dir] 2>&1 | tee metannotate_wrapper.log
+
+# Even simpler wrapper that works with enter-metannotate (see above)
+metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log
+```
+
+Threads (concurrency)
 -----------
-You can speed up metannotate by specifying a greater concurrency (number of threads) in metannotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
+You can speed up metannotate by specifying a greater concurrency (number of threads) in Metannotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
 
 Web UI (web server)
 ------------------
