@@ -1,0 +1,110 @@
+#!/bin/bash
+# Created Mar 9, 2017
+# Copyright Jackson M. Tsuji (Neufeld lab PhD student), 2018
+# Description: Wrapper to run MetAnnotate in a Docker container
+
+# Basic script stuff (Buffalo, 2015):
+set -e
+set -u
+set -o pipefail
+
+script_version=0.9.0 # to match MetAnnotate Docker version
+date_code=$(date '+%y%m%d')
+
+# If input field is empty, print help and end script
+if [ $# == 0 ]
+then
+	printf "\n$(basename $0): wrapper to start a Docker container with MetAnnotate.\n"
+	printf "Version: ${script_version}\n"
+	printf "Contact Jackson Tsuji (jackson.tsuji@uwaterloo.ca; Neufeld research group) for error reports or feature requests.\n\n"
+	printf "Usage: $(basename $0) [path_to_RefSeq_directory} [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]\n\n"
+	printf "Usage notes:\n"
+	printf "1. path_to_RefSeq_directory: i.e., where the database file RefSeq.fa and its index RefSeq.fa.ssi are stored (or the folder where you want to download the database to from within the container, during initial installation).\n"
+	printf "2. path_to_ORF_directory: should contain all open reading frame (ORF) prediction files (e.g., .frag.faa) for MetAnnotate to search against.\n"
+	printf "3. path_to_HMM_directory: should contain all HMM files for MetAnnotate to use in your run.\n"
+	printf "4. path_to_output_directory: the directory where output files from MetAnnotate should be stored. It's recommended but not necessary to make a 'tmp' subdirectory here for MetAnnotate to dump temp files during processing. Specify this for the '--tmp_dir' flag as '/home/linuxbrew/output/tmp'. This is done automatically for the metannotate-wrapper script.\n\n"
+	printf "Note that each of these directories are mapped to new directory paths within the docker container:\n"
+	printf "1. path_to_RefSeq_directory --> /home/linuxbrew/databases\n"
+	printf "2. path_to_ORF_directory --> /home/linuxbrew/orf_files\n"
+	printf "3. path_to_HMM_directory --> /home/linuxbrew/hmm_files\n"
+	printf "4. path_to_output_directory --> /home/linuxbrew/output\n"
+	printf "Keep this in mind when specifying file locations within the Docker container.\n\n"
+	printf "Example workflows within the container:\n"
+	printf "A. Download RefSeq database (only needed on first use): refseq_installation.sh /home/linuxbrew/databases\n"
+	printf "B. Specify the number of threads you want to use: echo "[threads]" > /home/linuxbrew/Metannotate/concurrency.txt\n"
+	printf "C-1. Start MetAnnotate run via the simple wrapper: metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log"
+	printf "C-2. Start MetAnnotate run the advanced way: e.g., cd /home/linuxbrew/Metannotate && run_metannotate.py --orf_files='../orf_files/file1.faa,../orf_files/file2.faa' --hmm_files='../hmm_files/file1.hmm,../hmm_files/file2.hmm' --reference_database='../databases/RefSeq.fa' --output_dir='../output' --tmp_dir='../output/tmp' --run_mode='sequence' --orfs_hmm_evalue='0.0001' --usearch_percent_id_cutoff='0.4' | tee '../output/metannotate.log' 2>&1\n\n"
+	exit 1
+fi
+
+#################################################################
+##### Settings: #################################################
+database_dir=$(realpath $1)
+orf_dir=$(realpath $2)
+hmm_dir=$(realpath $3)
+output_dir=$(realpath $4)
+metannotate_image_name="jmtsuji/metannotate:${script_version}"
+#################################################################
+
+function test_directories {
+	# Description: tests that the input directories exist
+	
+	if [ ! -d ${orf_dir} ]; then
+		print "Did not find ORF directory at '${orf_dir}'. Job terminating."
+		exit 1
+	fi
+	
+	if [ ! -d ${hmm_dir} ]; then
+		print "Did not find HMM directory at '${hmm_dir}'. Job terminating."
+		exit 1
+	fi
+
+	if [ ! -d ${output_dir} ]; then
+		print "Did not find output directory at '${output_dir}'. Job terminating."
+		exit 1
+	fi
+	
+	if [ ! -d ${database_dir} ]; then
+		print "Did not find RefSeq database directory at '${database_dir}'. Job terminating."
+		exit 1
+	fi
+}
+
+function start_metannotate {
+	# Description: starts the container
+	
+	echo ""
+	echo "docker run -v ${database_dir}:/home/linuxbrew/databases \
+	-v ${orf_dir}:/home/linuxbrew/orf_files \
+	-v ${hmm_dir}:/home/linuxbrew/hmm_files \
+	-v ${output_dir}:/home/linuxbrew/output \
+	-it ${metannotate_image_name} /bin/bash"
+	echo ""
+	
+	docker run -v ${database_dir}:/home/linuxbrew/databases \
+	-v ${orf_dir}:/home/linuxbrew/orf_files \
+	-v ${hmm_dir}:/home/linuxbrew/hmm_files \
+	-v ${output_dir}:/home/linuxbrew/output \
+	-it ${metannotate_image_name} /bin/bash
+	
+}
+
+function main {
+	echo "Running $(basename $0) version $script_version on ${date_code} (yymmdd). Starting MetAnnotate container..."
+	echo ""
+	
+	test_directories
+	
+	start_time=$(date)
+	start_metannotate
+	end_time=$(date)
+	
+	echo ""
+	echo ""
+	echo "$(basename $0): finished."
+	echo "Container started at ${start_time} and closed at ${end_time}."
+	echo ""
+
+}
+
+main

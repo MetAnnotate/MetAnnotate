@@ -1,0 +1,48 @@
+#!/bin/bash
+# Created March 10, 2017, by Jackson Tsuji (Neufeld lab PhD student)
+# Description: Simple wrapper for running MetAnnotate command line in Docker container.
+# Even simpler than metannotate-wrapper.
+
+# Basic script stuff (Buffalo, 2015):
+set -e
+set -u
+set -o pipefail
+
+script_version=0.9.0 # to match Docker tag
+date_code=$(date '+%y%m%d')
+
+# If input field is empty, print help and end script
+if [ $# == 0 ]; then
+	printf "\n$(basename $0): runs MetAnnotate via command line with simplified user input. **Ultra-simplified version for ease of use in Docker container.\n"
+	printf "Version: ${script_version}\n"
+	printf "Contact Jackson Tsuji (jackson.tsuji@uwaterloo.ca; Neufeld research group) for error reports or feature requests.\n\n"
+    printf "Usage: $(basename $0) [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log\n\n"
+	printf "Usage notes:\n"
+	printf "* run_type: must be 'sequence', 'phylogenetic', or 'both'.\n"
+	printf "* path_to_orf_files: ORF files need to have the extension .faa and can be in subfolders within the specified directory.\n"
+	printf "* path_to_hmm_files: HMM files must have the extension .hmm or .HMM and can be in subfolders within the specified directory.\n\n"
+	printf "Additional notes:\n"
+	printf "*Requires that metannotate-wrapper is installed and added to the PATH."
+	printf "* All other settings (e.g., location of MetAnnotate repo, RefSeq, output files) are hard-coded, assuming that work is being done in the MetAnnotate Docker container mediated by enter-metannotate. Use metannotate-wrapper instead if more flexibility is desired.\n\n"
+	exit 1
+fi
+
+
+#################################################################
+##### Get input from user: ######################################
+metannotate_dir="/home/linuxbrew/MetAnnotate"
+refseq_dir="/home/linuxbrew/databases" # where RefSeq.fa is stored
+run_type=$1 # Must be 'sequence', 'phylogenetic', or 'both'
+orf_files_location=$(realpath $2)
+hmm_files_locations=$(realpath $3)
+out_dir="/home/linuxbrew/output"
+# threads are encoded into MetAnnotate concurrency.txt file.
+#################################################################
+
+echo "Command run: metannotate-wrapper-docker $run_type $orf_files_location $hmm_files_locations"
+echo "Accessing metannotate-wrapper with settings for Docker container..."
+
+metannotate-wrapper $metannotate_dir $refseq_dir $run_type $orf_files_location $hmm_files_locations $out_dir
+
+echo "$(basename $0): done."
+echo ""
