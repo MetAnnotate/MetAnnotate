@@ -1,5 +1,11 @@
 [![Gitter chat](https://badges.gitter.im/Metannotate.png)](https://gitter.im/Metannotate)
 
+MetAnnotate
+=========================
+
+[MetAnnotate](https://doi.org/10.1186/s12915-015-0195-4) is a bioinformatics pipeline for scanning metagenomic datasets with custom Hidden Markov Models (HMMs) and assigning taxonomy compared to a reference database (RefSeq). Works for raw metagenomic reads (but not yet for assembled data).
+
+**About this fork**: This is a development version of MetAnnotate and is different than the [central BitBucket repo](https://bitbucket.org/doxeylab/metannotate).
 
 Installing MetAnnotate
 =========================
