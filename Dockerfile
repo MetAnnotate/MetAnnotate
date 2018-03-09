@@ -15,6 +15,6 @@ RUN sudo apt-get update \
 RUN git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git /home/linuxbrew/Metannotate
 
 # Install MetAnnotate (command line) and test
-RUN bash /home/linuxbrew/Metannotate/base_installation.sh
-RUN bash /home/linuxbrew/Metannotate/testing/test_metannotate_end_to_end.sh
+RUN cd /home/linuxbrew/Metannotate && bash base_installation.sh
+RUN cd /home/linuxbrew/Metannotate && bash test_metannotate_end_to_end.sh
 ENV PATH="${PATH}:/home/linuxbrew/Metannotate"
