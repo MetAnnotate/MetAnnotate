@@ -1,7 +1,7 @@
 # MetAnnotate command-line Dockerfile
 
 # Build and push to Docker Hub with:
-# docker build -t jmtsuji/metannotate:0.9.0 -t jmtsuji/metannotate:latest https://github.com/Metannotate/Metannotate.git#linuxbrew
+# docker build --no-cache -t jmtsuji/metannotate:0.9.0 -t jmtsuji/metannotate:latest https://github.com/Metannotate/Metannotate.git#linuxbrew
 # docker push jmtsuji/metannotate
 
 FROM linuxbrew/linuxbrew:1.5.5
