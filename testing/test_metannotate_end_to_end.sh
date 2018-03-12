@@ -9,6 +9,12 @@
 # Requirements: - A full CLI installation of Metannotate
 # ======================================================================================================================
 
+# Check that the output directory is not populated before testing
+if [[ -d test_output && ! -z "$(ls -A test_output)" ]]; then
+    echo "Tests could not be performed because test_output is not empty. Please empty, rename, or remove the directory and try again."
+    exit 1
+fi
+
 echo "Running Metannotate..."
 python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
