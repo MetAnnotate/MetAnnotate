@@ -133,4 +133,4 @@ echo "$HOME/.local/bin/" > path.txt
 
 echo -e "The command line version of metAnnotate has been set up."
 echo -e "\nIMPORTANT: Databases still need to be installed. Run refseq_installation.sh to do this."
-echo -e "\nTo install the web UI version of metAnnotate, please run the web_UI_installation.sh script with sudo permissions."
+echo -e "\nTo install the web UI version of MetAnnotate, please run the web_UI_installation.sh script with sudo permissions."
