@@ -5,7 +5,7 @@ set -e
 set -u
 set -o pipefail
 
-echo "Installing commandline and web version of metAnnotate, along with database"
+echo "Installing commandline and web version of MetAnnotate, along with database"
 echo "This is going to need root access and will take a while."
 metAnnotateDir="`pwd`"
 
@@ -24,16 +24,8 @@ mkdir -p "${HOME}/metagenome_files/sample"
 echo "${HOME}/metagenome_files" > metagenome_directories_root.txt
 echo "${HOME}/metagenome_files/sample" > metagenome_directories.txt
 
-echo "===Testing newly installed metannotate==="
-bash test_metannotate.sh
-# should expect 2 annotation files in test_output
-count=0
-for file in rpoB_0_MetagenomeTest_0_annotations_*.tsv; do count=$((count+1)); done
-if [ $count -ne 1 ]; then
-    >&2 echo "Testing failed, please check the output for error. Did you have the right permission to files? "
-    exit 1
-fi
-
-echo "=======Test passed====="
+echo "===Testing newly installed MetAnnotate==="
+bash testing/test_metannotate_end_to_end.sh
+echo "===Finished test==="
 
 echo "Please start server by running 'bash shell_scripts/start-server.sh'"
