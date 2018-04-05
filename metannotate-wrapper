@@ -14,7 +14,7 @@ date_code=$(date '+%y%m%d')
 if [ $# == 0 ]; then
 	printf "\n$(basename $0): runs MetAnnotate via command line with simplified user input.\n"
 	printf "Version: ${script_version}\n"
-	printf "Contact Jackson Tsuji (jackson.tsuji@uwaterloo.ca; Neufeld research group) for error reports or feature requests.\n\n"
+        printf "Copyright MetAnnotate team, 2018.\n\n"
     printf "Usage: $(basename $0) [metannotate_dir] [RefSeq_dir] [run_type] [path_to_orf_files] [path_to_hmm_files] [output_dir] 2>&1 | tee metannotate_wrapper.log\n\n"
 	printf "Usage notes:\n"
 	printf "metannotate_dir: where the metannotate repository is stored.\n"

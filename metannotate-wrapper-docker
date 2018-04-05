@@ -15,7 +15,7 @@ date_code=$(date '+%y%m%d')
 if [ $# == 0 ]; then
 	printf "\n$(basename $0): runs MetAnnotate via command line with simplified user input. **Ultra-simplified version for ease of use in Docker container.\n"
 	printf "Version: ${script_version}\n"
-	printf "Contact Jackson Tsuji (jackson.tsuji@uwaterloo.ca; Neufeld research group) for error reports or feature requests.\n\n"
+        printf "Copyright MetAnnotate team, 2018.\n\n"
     printf "Usage: $(basename $0) [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log\n\n"
 	printf "Usage notes:\n"
 	printf "* run_type: must be 'sequence', 'phylogenetic', or 'both'.\n"

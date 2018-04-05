@@ -16,7 +16,7 @@ if [ $# == 0 ]
 then
 	printf "\n$(basename $0): wrapper to start a Docker container with MetAnnotate.\n"
 	printf "Version: ${script_version}\n"
-	printf "Contact Jackson Tsuji (jackson.tsuji@uwaterloo.ca; Neufeld research group) for error reports or feature requests.\n\n"
+	printf "Copyright MetAnnotate team, 2018.\n\n"
 	printf "Usage: $(basename $0) [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]\n\n"
 	printf "Usage notes:\n"
 	printf "1. path_to_RefSeq_directory: i.e., where the database file RefSeq.fa and its index RefSeq.fa.ssi are stored (or the folder where you want to download the database to from within the container, during initial installation).\n"
