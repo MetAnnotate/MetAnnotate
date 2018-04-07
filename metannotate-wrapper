@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created March 10, 2017, by Jackson Tsuji (Neufeld lab PhD student)
+# Copyright MetAnnotate team, 2018
 # Description: Simple wrapper for running MetAnnotate command line
 
 # Basic script stuff (Buffalo, 2015):
