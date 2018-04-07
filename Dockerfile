@@ -12,7 +12,7 @@ RUN sudo apt-get update \
 	&& sudo apt-get install -y python-dev
 
 # Clone the repo
-RUN git clone -b 0.9.1 https://github.com/Metannotate/Metannotate.git /home/linuxbrew/Metannotate
+RUN git clone -b v0.9.1 https://github.com/Metannotate/Metannotate.git /home/linuxbrew/Metannotate
 
 # Install MetAnnotate (command line) and test
 RUN cd /home/linuxbrew/Metannotate && bash base_installation.sh
