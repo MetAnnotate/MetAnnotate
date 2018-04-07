@@ -30,7 +30,7 @@ jobs:
               brew install python@2 || true
               sudo ln -s /home/linuxbrew/.linuxbrew/Cellar/python@2/2.7.14_2/bin/python2 /bin/python
               sudo ln -s /home/linuxbrew/.linuxbrew/Cellar/python@2/2.7.14_2/bin/pip2 /bin/pip
-              /usr/bin/env bash -eo pipefail ./base_installation.sh
+              /usr/bin/env bash ./base_installation.sh
               nproc > concurrency.txt
               pip install nose
 
