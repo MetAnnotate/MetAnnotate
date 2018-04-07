@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+# Copyright MetAnnotate team, 2018
+# Description: Command-line caller for MetAnnotate.
+# **Requires environmental variable METANNOTATE_DIR to be set
+
+cd $METANNOTATE_DIR
+python2.7 run_metannotate.py $@
