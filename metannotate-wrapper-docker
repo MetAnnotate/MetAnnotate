@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
+set -euxo pipefail
 # Copyright MetAnnotate team, 2018
 # Description: Simple wrapper for running MetAnnotate command line in Docker container.
 # Even simpler than metannotate-wrapper.
-
-# Basic script stuff (Buffalo, 2015):
-set -e
-set -u
-set -o pipefail
 
 script_version=0.9.0 # to match Docker tag
 date_code=$(date '+%y%m%d')
