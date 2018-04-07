@@ -3,7 +3,7 @@ set -euxo pipefail
 # Copyright MetAnnotate team, 2018
 # Description: Simple wrapper for running MetAnnotate command line
 
-script_version=0.9.0 # to match Docker tag
+script_version=0.9.1 # to match Docker tag
 date_code=$(date '+%y%m%d')
 
 # If input field is empty, print help and end script
