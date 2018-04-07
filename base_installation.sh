@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euxo pipefail
 
 echo -e "\nInstalling command-line version of metAnnotate...\n"
 
@@ -31,6 +32,13 @@ if [ -e ~/.local/bin/pip ] ; then
   pip=~/.local/bin/pip
 fi
 $pip install --user -r requirements.txt --ignore-installed --quiet
+
+echo -e "\nInstalling java.\n"
+if [ ! `which java` ] ; then
+  sudo apt-get -y install default-jre
+else
+    echo -e "\nJava is already installed.\n"
+fi
 
 echo -e "\nInstalling KronaTools.\n"
 if [ ! `which ktImportText` ] ; then
@@ -99,6 +107,9 @@ else
 fi
 
 echo -e "\nInstalling cronjob to clean cache. \n"
+if [ ! `which crontab` ]; then
+    sudo apt-get install -y cron
+fi
 if [ `crontab -l` ] ; then
     crontab -l > mycron # saving current cronjob
     #echo new cron into cron file
@@ -118,4 +129,4 @@ echo "$HOME/.local/bin/" > path.txt
 
 echo -e "The command line version of metAnnotate has been set up."
 echo -e "\nIMPORTANT: Databases still need to be installed. Run refseq_installation.sh to do this."
-echo -e "\nTo install the web UI version of metAnnotate, please run the web_UI_installation.sh script with sudo permissions."
+echo -e "\nTo install the web UI version of MetAnnotate, please run the web_UI_installation.sh script with sudo permissions."

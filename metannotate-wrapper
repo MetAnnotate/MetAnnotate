@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+# Copyright MetAnnotate team, 2018
+# Description: Simple wrapper for running MetAnnotate command line
+
+script_version=0.9.0 # to match Docker tag
+date_code=$(date '+%y%m%d')
+
+# If input field is empty, print help and end script
+if [ $# == 0 ]; then
+	printf "\n$(basename $0): runs MetAnnotate via command line with simplified user input.\n"
+	printf "Version: ${script_version}\n"
+        printf "Copyright MetAnnotate team, 2018.\n\n"
+    printf "Usage: $(basename $0) [metannotate_dir] [RefSeq_dir] [run_type] [path_to_orf_files] [path_to_hmm_files] [output_dir] 2>&1 | tee metannotate_wrapper.log\n\n"
+	printf "Usage notes:\n"
+	printf "metannotate_dir: where the metannotate repository is stored.\n"
+	printf "refseq_dir: should contain RefSeq.fa and RefSeq.fa.ssi downloaded by refseq_installation.sh.\n"
+	printf "run_type: must be 'sequence', 'phylogenetic', or 'both'.\n"
+	printf "path_to_orf_files: ORF files need to have the extension .faa and can be in subfolders within the specified directory.\n"
+	printf "path_to_hmm_files: HMM files must have the extension .hmm or .HMM and can be in subfolders within the specified directory.\n"
+	printf "output_dir: the directory where output files will be stored. **The MetAnnotate tmp folder will be created here if it does not already exist.\n\n"
+	exit 1
+fi
+
+
+#################################################################
+##### Get input from user: ######################################
+metannotate_dir=$(realpath $1) # the MetAnnotate repo
+refseq_dir=$(realpath $2) # where RefSeq.fa is stored
+run_type=$3 # Must be 'sequence', 'phylogenetic', or 'both'
+orf_files_location=$(realpath $4)
+hmm_files_locations=$(realpath $5)
+out_dir=$(realpath $6)
+# threads are encoded into MetAnnotate concurrency.txt file.
+#################################################################
+
+echo "Running $(basename $0) version $script_version on ${date_code} (yymmdd)."
+echo "Command run: metannotate-wrapper $metannotate_dir $refseq_dir $run_type $orf_files_location $hmm_files_locations $out_dir"
+echo ""
+
+# Test that MetAnnotate directory exists, and exit if it does not
+if [ ! -d ${metannotate_dir} ]; then
+    echo "Did not find MetAnnotate directory '${metannotate_dir}'. Job terminating."
+    exit 1
+fi
+# Same for reference database
+if [ ! -f "${refseq_dir}/Refseq.fa" ]; then
+    echo "Did not find RefSeq database at '${refseq_dir}/Refseq.fa'. Job terminating."
+    exit 1
+fi
+# Same for hmm files
+if [ ! -d "${orf_files_locations}" ]; then
+    echo "Did not find ORF file directory at '${orf_files_locations}'. Job terminating."
+	exit 1
+fi
+# Same for hmm files
+if [ ! -d "${hmm_files_locations}" ]; then
+    echo "Did not find hmm file directory at '${hmm_files_locations}'. Job terminating."
+	exit 1
+fi
+# Check on run_type
+if [ $run_type != "sequence" -a $run_type != "phylogenetic" -a $run_type != "both" ]; then
+    echo "run_type is incorrect. Must be 'sequence', 'phylogenetic', or 'both'. Job terminating."
+	exit 1
+fi
+
+# Make temp directory if it does not already exist
+if [ ! -d "${out_dir}/tmp" ]; then
+    echo "Creating temp directory '${out_dir}/tmp' for MetAnnotate"
+	mkdir -p ${out_dir}/tmp
+elif [ -d "${out_dir}/tmp" ]; then
+	echo "WARNING: temp directory '${out_dir}/tmp' already exists. Old temporary files may be overwritten in this run."
+fi
+
+start_time=$(date)
+
+# Make output directory and go there
+mkdir -p $out_dir && cd $out_dir
+
+# # Find RefSeq version
+# refseq_version=$(cat ${metannotate_dir}/data/RELEASE_NUMBER_RefSeq.txt)
+# echo "Will use RefSeq release ${refseq_version}"
+
+## Find ORF files
+orf_files=($(find ${orf_files_location} -iname "*.faa" -type f -follow | sort))
+echo "Found ${#orf_files[@]} open reading frame (ORF) prediction files to run MetAnnotate on."
+
+# Build comma-separated ORF list
+for i in $(seq 1 ${num_orfs})
+do
+    if [ $i == 1 ]
+    then
+        printf ${orf_files[$((${i}-1))]}, > tmp/orf_list.txt
+    elif [ $i == $num_orfs ]
+    then
+        printf ${orf_files[$((${i}-1))]} >> tmp/orf_list.txt
+    else
+        printf ${orf_files[$((${i}-1))]}, >> tmp/orf_list.txt
+    fi
+done
+
+# Load comma-separated ORF list
+orf_list=$(cat TEMP/orf_list.txt)
+
+# Remove temp file
+rm tmp/orf_list.txt
+
+## Find HMM files
+hmm_files=($(find ${hmm_files_locations} -iname "*.hmm" -type f -follow | sort))
+echo "Found ${#hmm_files[@]} HMM files as queries for MetAnnotate."
+
+# Build comma-separated HMM list
+for i in $(seq 1 ${num_hmms})
+do
+if [ $i == 1 ]
+    then
+        printf ${hmm_files[$((${i}-1))]}, > TEMP/hmm_list.txt
+    elif [ $i == $num_hmms ]
+    then
+        printf ${hmm_files[$((${i}-1))]} >> TEMP/hmm_list.txt
+    else
+        printf ${hmm_files[$((${i}-1))]}, >> TEMP/hmm_list.txt
+    fi
+done
+
+# Load comma-separated HMM list
+hmm_list=$(cat TEMP/hmm_list.txt)
+
+# Remove temp file and dir
+rm tmp/hmm_list.txt
+rm -r tmp
+
+## Print names of ORF files being analyzed to the screen
+echo ""
+echo "ORF prediction files being scanned:"
+for orf_file in ${orf_files[@]}; do
+    echo "   $(basename ${orf_file})"
+done
+echo ""
+echo ""
+
+
+# Find HMM lengths
+echo "Lengths of HMM being run (ID: length):"
+for hmm_file in ${hmm_files[@]}
+do
+    hmm_id=$(basename ${hmm_file} .hmm)
+	hmm_id=$(basename ${hmm_file} .HMM)
+
+    # Get HMM length for reference
+    hmm_length=$(grep "^LENG" ${hmm_file})
+    echo "   ${hmm_id}: ${hmm_length}"
+done
+echo ""
+echo ""
+
+
+# Run MetAnnotate
+threads=$(cat ${metannotate_dir}/concurrency.txt)
+echo "Running MetAnnotate using ${threads} threads for all samples against all HMMs. Saving run log to '${out_dir}/metannotate.log'."
+echo "(Threads can be modified using file ${metannotate_dir}/concurrency.txt.)"
+echo "(All other values, e.g., e-value cutoffs, are defaults.)"
+
+cd $metannotate_dir
+python2.7 run_metannotate.py --orf_files=${orf_list} --hmm_files=${hmm_list} --reference_database=${refseq_dir}/Refseq.fa --output_dir=${out_dir} --tmp_dir=${out_dir}/tmp --run_mode=${run_type} > ${out_dir}/metannotate.log 2>&1
+
+end_time=$(date)
+
+echo ""
+echo ""
+
+echo "$(basename $0): finished. Output can be found in ${out_dir}. Can delete '${out_dir}/tmp' if empty."
+echo "Started at ${start_time} and finished at ${end_time}."
+echo ""

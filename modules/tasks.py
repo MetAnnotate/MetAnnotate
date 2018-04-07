@@ -36,7 +36,7 @@ except IOError as e:
 
 os.environ["PATH"] += os.pathsep + extra_path
 
-
+# Runs command line program as a subprocess
 def run_process(args, stdout_file=None, meta=None, task=None):
     stdout_handle = (open(stdout_file, 'w') if stdout_file else
                      tempfile.NamedTemporaryFile(dir=TMP_DIR))
@@ -1152,6 +1152,8 @@ def run_pipeline_real(instance, task_id, orf_files, hmm_files, hmm_evalue,
                             name = 'gi|%s|%s|%s' % (gi_num, tax_name, coords)
                     leaf.name = name
             tree.write(outfile=tree_file)
+            if os.path.exists(tree_file):
+                os.chmod(tree_file, 0774)
 
             # Creates a phyloxml version of the tree.
             phyloxml_tree = '%s.phyloxml' % tree_file
