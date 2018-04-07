@@ -162,7 +162,7 @@ echo "(Threads can be modified using file ${metannotate_dir}/concurrency.txt.)"
 echo "(All other values, e.g., e-value cutoffs, are defaults.)"
 
 cd $metannotate_dir
-run_metannotate.py --orf_files=${orf_list} --hmm_files=${hmm_list} --reference_database=${refseq_dir}/Refseq.fa --output_dir=${out_dir} --tmp_dir=${out_dir}/tmp --run_mode=${run_type} > ${out_dir}/metannotate.log 2>&1
+python2.7 run_metannotate.py --orf_files=${orf_list} --hmm_files=${hmm_list} --reference_database=${refseq_dir}/Refseq.fa --output_dir=${out_dir} --tmp_dir=${out_dir}/tmp --run_mode=${run_type} > ${out_dir}/metannotate.log 2>&1
 
 end_time=$(date)
 

@@ -12,7 +12,7 @@ set -euxo pipefail
 
 # TODO - add try-catch statement to report if running metannotate itself fails
 echo "Running Metannotate..."
-python run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
+python2.7 run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
 echo "Verifying outputs..."
 
