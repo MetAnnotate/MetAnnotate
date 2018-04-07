@@ -67,13 +67,17 @@ Example command line usage:
 ```
 # Download RefSeq database (only needed on first use):
 enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
-cd $METANNOTATE_DIR && sudo ./refseq_installation.sh /home/linuxbrew/databases
+cd $METANNOTATE_DIR && sudo chown linuxbrew ../databases
+bash refseq_installation.sh /home/linuxbrew/databases && sudo chown -R root:root ../databases
 exit
 
 # Start MetAnnotate run via the simple command line wrapper (run metannotate-wrapper-docker for more detailed help):
 enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
-sudo metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log
-# 'sudo' is often needed from within the container because the user in the container is different from the user that made the directories outside the container.
+ref_UID=$(stat -c "%u" /home/linuxbrew/output)
+sudo chown -R linuxbrew /home/linuxbrew/output
+metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log
+sudo chown -R $ref_UID /home/linuxbrew/output
+# The 'chown' commands temporarily make the output folder belong to the linuxbrew user inside the Docker container so that the user can run the Docker commands. Files are given back to you at the end.
 exit
 ```
 
