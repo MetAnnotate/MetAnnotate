@@ -52,7 +52,7 @@ To use the command line effectively, you'll need to mount system file directorie
 
 ```
 # Install the script (only need to do this once)
-git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git
+git clone -b develop https://github.com/Metannotate/Metannotate.git
 cd Metannotate
 chmod 755 enter-metannotate
 sudo cp enter-metannotate /usr/local/bin # or add to your path a different way, or use locally only.
