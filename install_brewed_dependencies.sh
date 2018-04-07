@@ -17,7 +17,8 @@ set -o pipefail
 brew update
 brew update
 
-brew tap brewsci/science
+brew tap brewsci/science # TODO: confirm whether this can be removed.
+brew tap brewsci/bio
 brew tap Metannotate/homebrew-metannotate
 brew update
 
