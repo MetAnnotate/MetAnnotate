@@ -1,6 +1,6 @@
 #!/bin/bash
 # Created Mar 9, 2017
-# Copyright Jackson M. Tsuji (Neufeld lab PhD student), 2018
+# Copyright MetAnnotate Team, 2018
 # Description: Wrapper to run MetAnnotate in a Docker container
 
 # Basic script stuff (Buffalo, 2015):
