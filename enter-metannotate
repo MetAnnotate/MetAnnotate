@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Created Mar 9, 2017
 # Copyright MetAnnotate Team, 2018
 # Description: Wrapper to run MetAnnotate in a Docker container
