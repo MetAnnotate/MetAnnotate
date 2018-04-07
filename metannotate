@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -euo pipefail
 # Copyright MetAnnotate team, 2018
 # Description: Command-line caller for MetAnnotate.
 # **Requires environmental variable METANNOTATE_DIR to be set

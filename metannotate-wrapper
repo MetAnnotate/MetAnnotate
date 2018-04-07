@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -euo pipefail
 # Copyright MetAnnotate team, 2018
 # Description: Simple wrapper for running MetAnnotate command line
 
