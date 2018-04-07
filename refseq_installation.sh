@@ -1,9 +1,5 @@
 #!/bin/bash
-
-# Robust bash header (Buffalo, 2015):
-set -e
-set -u
-set -o pipefail
+set -euxo pipefail
 
 metAnnotateDir="`pwd`"
 

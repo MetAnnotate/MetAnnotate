@@ -1,9 +1,5 @@
 #!/bin/bash
-
-# Robust bash header (Buffalo, 2015):
-set -e
-set -u
-set -o pipefail
+set -euxo pipefail
 
 echo "Installing commandline and web version of MetAnnotate, along with database"
 echo "This is going to need root access and will take a while."

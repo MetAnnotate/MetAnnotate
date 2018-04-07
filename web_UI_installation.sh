@@ -1,9 +1,5 @@
 #!/bin/bash
-
-# Robust bash header (Buffalo, 2015):
-set -e
-set -u
-set -o pipefail
+set -euxo pipefail
 
 echo "Installing UI version of metAnnotate...\n\nNote that you should have already run base_installation.sh and refseq_installation.sh. Also note that this script requires sudo permissions.\n\n"
 

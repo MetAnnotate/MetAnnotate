@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euxo pipefail
 
 # ======================================================================================================================
 # Created by: Metannotate Team (2017)
@@ -7,11 +8,6 @@
 #
 # Requirements: - Linux Brew
 # ======================================================================================================================
-
-# Basic script stuff (Buffalo, 2017):
-set -e
-set -u
-set -o pipefail
 
 # Brew update twice to get around some bugs that occur with fresh brew installs.
 brew update
