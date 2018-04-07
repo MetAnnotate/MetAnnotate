@@ -30,5 +30,5 @@ brew install linuxbrew/xorg/xorg
 brew install emboss --without-x
 brew install fasttree
 brew install hmmer
-brew install easel
+brew install metannotate/metannotate/easel
 brew install pbzip2
