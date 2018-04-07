@@ -51,12 +51,14 @@ docker run -it jmtsuji/metannotate:latest /bin/bash
 To use the command line effectively, you'll need to mount system file directories into the Docker container. This is handled by the friendly wrapper included in this repo, `enter-metannotate`. This will enter the Docker container for you. Simply add the script to your ordinary system PATH (as shown below) and run the entry command:
 
 ```
+# Install the script (only need to do this once)
 git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git
 cd Metannotate
 chmod 755 enter-metannotate
 sudo cp enter-metannotate /usr/local/bin # or add to your path a different way, or use locally only.
 rm -r Metannotate # if only using Docker, the rest of the git repo is not needed. Might need sudo to delete the git repo.
 
+# Enter the Docker container using the script
 enter-metannotate # to see informative help file that goes into more detail than presented here
 enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
 ```
@@ -65,7 +67,7 @@ Example command line usage:
 ```
 # Download RefSeq database (only needed on first use):
 enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
-refseq_installation.sh /home/linuxbrew/databases
+cd $METANNOTATE_DIR && refseq_installation.sh /home/linuxbrew/databases
 exit
 
 # Start MetAnnotate run via the simple command line wrapper (run metannotate-wrapper-docker for more detailed help):
@@ -108,7 +110,18 @@ bash refseq_installation.sh # to install databases
 # enter password as required
 ```
 
-You can then run `run_metannotate.py` from within the install folder (does not work if run outside the install folder). Try `run_metannotate.py -h` for options.
+You can then run `python2.7 run_metannotate.py` from within the install folder (does not work if run outside the install folder). Try `python2.7 run_metannotate.py -h` for options.
+
+
+Using the 'metannotate' caller
+------------------------
+If you would like to run MetAnnotate without having to first move into the install folder (as mentioned above), you can add the following to your `.bashrc` file:
+```
+METANNOTATE_DIR=[path_to_your_MetAnnotate_install_directory]
+```
+Then log out and log back in, or type `source ~/.bashrc`.
+
+After this, you should be able to run MetAnnotate via the simple binary `metannotate` included in the git repo, which you can move to a folder in your PATH (e.g., `/usr/local/bin`). `metannotate` is the same as `cd $METANNOTATE_DIR && python2.7 run_metannotate.py`.
 
 
 Running MetAnnotate
@@ -118,14 +131,15 @@ Command line example -- advanced usage
 ---
 ```
 # cd [metannotate_repo_directory]
-run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
+python2.7 run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 ```
 Note that in the example above, a (tiny) test reference database was specified to make process faster. If not specified, the default data/Refseq.fa database is used. You should now see run outputs in `test_output` directory. 
 
 For more options:
 ```
-python run_metannotate.py --help
+python2.7 run_metannotate.py --help
 ```
+Note that you could call any of the above commands via the `metannotate` binary instead of `python2.7 run_metannotate.py` if desired -- see note in the Installation section.
 
 Command line example -- simplified
 ---
