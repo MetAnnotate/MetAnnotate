@@ -67,12 +67,13 @@ Example command line usage:
 ```
 # Download RefSeq database (only needed on first use):
 enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
-cd $METANNOTATE_DIR && refseq_installation.sh /home/linuxbrew/databases
+cd $METANNOTATE_DIR && sudo ./refseq_installation.sh /home/linuxbrew/databases
 exit
 
 # Start MetAnnotate run via the simple command line wrapper (run metannotate-wrapper-docker for more detailed help):
 enter-metannotate [path_to_RefSeq_directory] [path_to_ORF_directory] [path_to_HMM_directory] [path_to_output_directory]
-metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log
+sudo metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log
+# 'sudo' is often needed from within the container because the user in the container is different from the user that made the directories outside the container.
 exit
 ```
 
