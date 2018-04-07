@@ -18,3 +18,4 @@ RUN git clone -b 0.9.0 https://github.com/Metannotate/Metannotate.git /home/linu
 RUN cd /home/linuxbrew/Metannotate && bash base_installation.sh
 RUN cd /home/linuxbrew/Metannotate && bash testing/test_metannotate_end_to_end.sh
 ENV PATH="${PATH}:/home/linuxbrew/Metannotate"
+ENV METANNOTATE_DIR="/home/linuxbrew/Metannotate"
