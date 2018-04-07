@@ -1,7 +1,7 @@
 # MetAnnotate command-line Dockerfile
 
 # Build and push to Docker Hub with:
-# docker build --no-cache -t metannotate/metannotate:0.9.1 -t metannotate/metannotate:latest https://github.com/Metannotate/Metannotate.git#v0.9.1
+# docker build --no-cache -t metannotate/metannotate:0.9.1 -t metannotate/metannotate:latest https://github.com/Metannotate/Metannotate.git#0.9.1
 # docker push metannotate/metannotate
 
 FROM linuxbrew/linuxbrew:1.5.5
@@ -12,7 +12,7 @@ RUN sudo apt-get update \
 	&& sudo apt-get install -y python-dev
 
 # Clone the repo
-RUN git clone -b v0.9.1 https://github.com/Metannotate/Metannotate.git /home/linuxbrew/Metannotate
+RUN git clone -b 0.9.1 https://github.com/Metannotate/Metannotate.git /home/linuxbrew/Metannotate
 
 # Install MetAnnotate (command line) and test
 RUN cd /home/linuxbrew/Metannotate && bash base_installation.sh
