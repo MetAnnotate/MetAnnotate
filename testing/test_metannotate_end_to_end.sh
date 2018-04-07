@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euxo pipefail
 
 # ======================================================================================================================
 # Created by: Metannotate Team (2017)
@@ -8,11 +9,6 @@
 #
 # Requirements: - A full CLI installation of Metannotate
 # ======================================================================================================================
-
-# Robust bash header (Buffalo, 2015):
-set -e
-set -u
-set -o pipefail
 
 # TODO - add try-catch statement to report if running metannotate itself fails
 echo "Running Metannotate..."
