@@ -52,11 +52,11 @@ To use the command line effectively, you'll need to mount system file directorie
 
 ```
 # Install the script (only need to do this once)
-git clone -b develop https://github.com/Metannotate/Metannotate.git
-cd Metannotate
+git clone -b develop https://github.com/MetAnnotate/MetAnnotate.git
+cd MetAnnotate
 chmod 755 enter-metannotate
 sudo cp enter-metannotate /usr/local/bin # or add to your path a different way, or use locally only.
-rm -r Metannotate # if only using Docker, the rest of the git repo is not needed. Might need sudo to delete the git repo.
+rm -rf MetAnnotate # if only using Docker, the rest of the git repo is not needed.
 
 # Enter the Docker container using the script
 enter-metannotate # to see informative help file that goes into more detail than presented here
@@ -90,8 +90,8 @@ sudo apt-get update
 if [ ! `which git` ]; then
   sudo apt-get install -y git
 fi
-git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git
-cd Metannotate
+git clone -b develop https://github.com/MetAnnotate/MetAnnotate.git
+cd MetAnnotate
 bash one_command_install.sh
 # enter password as required
 ```
