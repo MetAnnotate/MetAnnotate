@@ -49,8 +49,8 @@ if [ ! -f "${refseq_dir}/Refseq.fa" ]; then
     exit 1
 fi
 # Same for hmm files
-if [ ! -d "${orf_files_locations}" ]; then
-    echo "Did not find ORF file directory at '${orf_files_locations}'. Job terminating."
+if [ ! -d "${orf_files_location}" ]; then
+    echo "Did not find ORF file directory at '${orf_files_location}'. Job terminating."
 	exit 1
 fi
 # Same for hmm files
@@ -86,12 +86,12 @@ orf_files=($(find ${orf_files_location} -iname "*.faa" -type f -follow | sort))
 echo "Found ${#orf_files[@]} open reading frame (ORF) prediction files to run MetAnnotate on."
 
 # Build comma-separated ORF list
-for i in $(seq 1 ${num_orfs})
+for i in $(seq 1 ${#orf_files[@]})
 do
     if [ $i == 1 ]
     then
         printf ${orf_files[$((${i}-1))]}, > tmp/orf_list.txt
-    elif [ $i == $num_orfs ]
+    elif [ $i == ${#orf_files[@]} ]
     then
         printf ${orf_files[$((${i}-1))]} >> tmp/orf_list.txt
     else
@@ -100,7 +100,7 @@ do
 done
 
 # Load comma-separated ORF list
-orf_list=$(cat TEMP/orf_list.txt)
+orf_list=$(cat tmp/orf_list.txt)
 
 # Remove temp file
 rm tmp/orf_list.txt
@@ -110,21 +110,21 @@ hmm_files=($(find ${hmm_files_locations} -iname "*.hmm" -type f -follow | sort))
 echo "Found ${#hmm_files[@]} HMM files as queries for MetAnnotate."
 
 # Build comma-separated HMM list
-for i in $(seq 1 ${num_hmms})
+for i in $(seq 1 ${#hmm_files[@]})
 do
 if [ $i == 1 ]
     then
-        printf ${hmm_files[$((${i}-1))]}, > TEMP/hmm_list.txt
-    elif [ $i == $num_hmms ]
+        printf ${hmm_files[$((${i}-1))]}, > tmp/hmm_list.txt
+    elif [ $i == ${#hmm_files[@]} ]
     then
-        printf ${hmm_files[$((${i}-1))]} >> TEMP/hmm_list.txt
+        printf ${hmm_files[$((${i}-1))]} >> tmp/hmm_list.txt
     else
-        printf ${hmm_files[$((${i}-1))]}, >> TEMP/hmm_list.txt
+        printf ${hmm_files[$((${i}-1))]}, >> tmp/hmm_list.txt
     fi
 done
 
 # Load comma-separated HMM list
-hmm_list=$(cat TEMP/hmm_list.txt)
+hmm_list=$(cat tmp/hmm_list.txt)
 
 # Remove temp file and dir
 rm tmp/hmm_list.txt
