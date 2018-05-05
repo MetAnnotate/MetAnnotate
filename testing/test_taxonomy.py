@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Created by: Metannotate Team (2017)
+Created by: MetAnnotate Team (2017)
 
 Description: A simple unittest for testing the taxonomy module
 """

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Created by: Metannotate Team 2017
+Created by: MetAnnotate Team 2017
 
 Description: Contains functions and code for dealing with taxonomy information.
              Can be called to parse NCBI taxonomy dumps
@@ -156,7 +156,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    cli_title = """Creates a pickle file containing taxonomy information to be used by Metannotate"""
+    cli_title = """Creates a pickle file containing taxonomy information to be used by MetAnnotate"""
 
     parser = argparse.ArgumentParser(description=cli_title)
     parser.add_argument('-n', '--names_dmp_file', metavar='FILE', required=True,

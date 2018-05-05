@@ -1,4 +1,4 @@
-[![Gitter chat](https://badges.gitter.im/Metannotate.png)](https://gitter.im/Metannotate)
+[![Gitter chat](https://badges.gitter.im/metannotate.png)](https://gitter.im/metannotate)
 
 MetAnnotate
 =========================
@@ -45,7 +45,7 @@ The Docker installation should work on any operating system supporting Docker (e
 
 Get started with:
 ```
-docker run -it jmtsuji/metannotate:latest /bin/bash
+docker run -it metannotate/metannotate:latest /bin/bash
 ```
 
 To use the command line effectively, you'll need to mount system file directories into the Docker container. This is handled by the friendly wrapper included in this repo, `enter-metannotate`. This will enter the Docker container for you. Simply add the script to your ordinary system PATH (as shown below) and run the entry command:
@@ -108,8 +108,8 @@ sudo apt-get update
 if [ ! `which git` ]; then
   sudo apt-get install -y git
 fi
-git clone -b linuxbrew https://github.com/Metannotate/Metannotate.git
-cd Metannotate
+git clone -b linuxbrew https://github.com/metannotate/metannotate.git
+cd MetAnnotate
 bash base_installation.sh
 bash refseq_installation.sh # to install databases
 # enter password as required
@@ -160,7 +160,7 @@ metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>
 
 Threads (concurrency)
 -----------
-You can speed up metannotate by specifying a greater concurrency (number of threads) in Metannotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
+You can speed up metannotate by specifying a greater concurrency (number of threads) in MetAnnotate/concurrency.txt. This will have the effect of increasing concurrency for HMMER, FastTree, and pplacer commands.
 
 Web UI (web server)
 ------------------

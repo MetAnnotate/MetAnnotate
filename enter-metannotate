@@ -27,9 +27,9 @@ then
 	printf "Keep this in mind when specifying file locations within the Docker container.\n\n"
 	printf "Example workflows within the container:\n"
 	printf "A. Download RefSeq database (only needed on first use): refseq_installation.sh /home/linuxbrew/databases\n"
-	printf "B. Specify the number of threads you want to use: echo "[threads]" > /home/linuxbrew/Metannotate/concurrency.txt\n"
+	printf "B. Specify the number of threads you want to use: echo "[threads]" > /home/linuxbrew/MetAnnotate/concurrency.txt\n"
 	printf "C-1. Start MetAnnotate run via the simple wrapper: metannotate-wrapper-docker [run_type] [path_to_orf_files] [path_to_hmm_files] 2>&1 | tee metannotate_wrapper_docker.log"
-	printf "C-2. Start MetAnnotate run the advanced way: e.g., cd /home/linuxbrew/Metannotate && run_metannotate.py --orf_files='../orf_files/file1.faa,../orf_files/file2.faa' --hmm_files='../hmm_files/file1.hmm,../hmm_files/file2.hmm' --reference_database='../databases/RefSeq.fa' --output_dir='../output' --tmp_dir='../output/tmp' --run_mode='sequence' --orfs_hmm_evalue='0.0001' --usearch_percent_id_cutoff='0.4' | tee '../output/metannotate.log' 2>&1\n\n"
+	printf "C-2. Start MetAnnotate run the advanced way: e.g., cd /home/linuxbrew/MetAnnotate && run_metannotate.py --orf_files='../orf_files/file1.faa,../orf_files/file2.faa' --hmm_files='../hmm_files/file1.hmm,../hmm_files/file2.hmm' --reference_database='../databases/RefSeq.fa' --output_dir='../output' --tmp_dir='../output/tmp' --run_mode='sequence' --orfs_hmm_evalue='0.0001' --usearch_percent_id_cutoff='0.4' | tee '../output/metannotate.log' 2>&1\n\n"
 	exit 1
 fi
 

@@ -2,12 +2,12 @@
 set -euxo pipefail
 
 # ======================================================================================================================
-# Created by: Metannotate Team (2017)
+# Created by: MetAnnotate Team (2017)
 #
-# Description: A shell script that runs a sample test of Metannotate and compares the generated
+# Description: A shell script that runs a sample test of MetAnnotate and compares the generated
 #              output files to verify proper end-to-end functionality of the program.
 #
-# Requirements: - A full CLI installation of Metannotate
+# Requirements: - A full CLI installation of MetAnnotate
 # ======================================================================================================================
 
 # Check that the output directory is not populated before testing
@@ -17,7 +17,7 @@ if [[ -d test_output && ! -z "$(ls -A test_output)" ]]; then
 fi
 
 # TODO - add try-catch statement to report if running metannotate itself fails
-echo "Running Metannotate..."
+echo "Running MetAnnotate..."
 python2.7 run_metannotate.py --orf_files=data/MetagenomeTest.fa --hmm_files=data/hmms/RPOB.HMM --reference_database=data/ReferenceTest.fa --output_dir=test_output --tmp_dir=test_tmp --run_mode=both
 
 # Clear the cache to prevent problems when running MetAnnotate with the standard database
@@ -29,7 +29,7 @@ echo "Verifying outputs..."
 EXIT_CODE=0
 PROJECT_ROOT_PATH=$(pwd)
 
-## Check that the number of files in the Metannotate --output_dir is correct
+## Check that the number of files in the MetAnnotate --output_dir is correct
 # TODO: replace this test with individual tests for each expected file
 NUM_OUTPUT_FILES=$(ls ${PROJECT_ROOT_PATH}/test_output | wc -l | sed 's/ //g')
 CORRECT_NUM_FILES=13
@@ -65,7 +65,7 @@ for entry in $(ls); do
         CHECKED_FILES[1]=${entry}
 
     # Checks if entry is the annotations table
-    # Only the first 14 columns are consistent between Metannotate runs
+    # Only the first 14 columns are consistent between MetAnnotate runs
     elif [[ ${entry} == rpoB_0_MetagenomeTest_0_annotations*tsv ]]; then
         REGENERATED_FILE_HASHES[2]=$(cut -f 1-14 ${entry} | md5sum | cut -d ' ' -f 1)
         CHECKED_FILES[2]=${entry}

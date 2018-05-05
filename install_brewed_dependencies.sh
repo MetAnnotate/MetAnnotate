@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # ======================================================================================================================
-# Created by: Metannotate Team (2017)
+# Created by: MetAnnotate Team (2017)
 #
 # Description: A shell script for installing dependencies via Linuxbrew.
 #
