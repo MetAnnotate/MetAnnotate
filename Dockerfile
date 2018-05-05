@@ -19,4 +19,3 @@ RUN cd /home/linuxbrew/MetAnnotate && bash base_installation.sh
 RUN cd /home/linuxbrew/MetAnnotate && bash testing/test_metannotate_end_to_end.sh
 ENV PATH="${PATH}:/home/linuxbrew/MetAnnotate"
 ENV METANNOTATE_DIR="/home/linuxbrew/MetAnnotate"
-RUN sudo PATH=$PATH
