@@ -4,7 +4,7 @@ set -euo pipefail
 # Copyright MetAnnotate Team, 2018
 # Description: Wrapper to run MetAnnotate in a Docker container
 
-script_version=0.9.1 # MUST exactly match MetAnnotate Docker container tag!
+script_version=0.9.2 # MUST exactly match MetAnnotate Docker container tag!
 date_code=$(date '+%y%m%d')
 
 # If input field is empty, print help and end script
